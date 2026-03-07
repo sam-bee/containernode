@@ -4,7 +4,7 @@ metadata:
   name: letsencrypt-production
 spec:
   acme:
-    email: admin@personalinfra.com
+    email: admin@personalinfra.org
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: letsencrypt-production
