@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - namespaces.yaml
   - cert-manager
+  - jellyfin
   - monero

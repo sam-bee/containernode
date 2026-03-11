@@ -1,0 +1,10 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: tailscale-only
+  namespace: jellyfin
+spec:
+  ipWhiteList:
+    sourceRange:
+      - 100.64.0.0/10
+      - fd7a:115c:a1e0::/48

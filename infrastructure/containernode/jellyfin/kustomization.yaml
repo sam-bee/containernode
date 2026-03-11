@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - persistentvolume-config.yaml
+  - persistentvolumeclaim-config.yaml
+  - persistentvolume-media.yaml
+  - persistentvolumeclaim-media.yaml
+  - deployment.yaml
+  - service.yaml
+  - middleware-tailscale-only.yaml
+  - ingress.yaml

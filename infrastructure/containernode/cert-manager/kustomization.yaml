@@ -5,3 +5,4 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - clusterissuer.yaml
+  - clusterissuer-dns01-cloudflare.yaml
