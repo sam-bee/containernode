@@ -29,5 +29,6 @@ spec:
               mountPath: /home/monero/.bitmonero
       volumes:
         - name: blockchain-data
-          persistentVolumeClaim:
-            claimName: monero-blockchain-pvc
+          hostPath:
+            path: /mnt/erithc-clusterfiles/k3s-volumes/monero
+            type: Directory
