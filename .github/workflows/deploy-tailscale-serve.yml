@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
 
           tailscale ssh "$USER_AT_HOST" \
-            "export TAILNET_NAME='$TAILNET_NAME'; export GITHUB_SHA='${GITHUB_SHA}'; export GITHUB_REF_NAME='${GITHUB_REF_NAME}'; '$REMOTE_SCRIPT'"
+            "export GITHUB_SHA='${GITHUB_SHA}'; export GITHUB_REF_NAME='${GITHUB_REF_NAME}'; '$REMOTE_SCRIPT'"
 
       - name: Show remote Tailscale status on failure
         if: failure()
