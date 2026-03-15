@@ -1,30 +1,16 @@
 # Tailscale Files
 
-`tailscale serve` is acting as a reverse proxy, for web applications only available on the tailnet.
+`tailscale/serve-config.json` is the active Tailscale Serve config tracked in this repository.
 
-`tailscale/serve-config.json` is the main config file that controls this.
+Deployment is handled by:
 
-`tailscale/serve-config.template.json` is a template without certain sensitive data in it, and is in version control.
+- `.github/workflows/deploy-tailscale-serve.yml`
+- `tailscale/update-serve-config.sh`
 
+The workflow connects to `containernode` over Tailscale SSH and runs the server-side script. That script resets the remote checkout to `origin/main` and applies `tailscale/serve-config.json` with `tailscale serve set-config`.
 
-## Role of Github Actions - templating
+When editing this directory:
 
-A Github Action can run something similar to this command:
-
-```
-envsubst < tailscale/serve-config.template.json > tailscale/serve-config.json
-```
-
-This runs on the Gihub Action runner, and results in a file with secrets injected.
-
-## Role of Github Actions - using config
-
-The Github Action can also do something like this:
-
-```
-tailscale serve set-config serve-config.json --all
-```
-
-This has the effect of loading the latest config changes.
-
-`tailscale/`
+- update `serve-config.json`
+- keep upstream ports aligned with the service actually listening on the host
+- prefer host-local upstreams such as `127.0.0.1:PORT`
