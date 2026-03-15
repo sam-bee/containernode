@@ -7,7 +7,8 @@ Go to the [Tailscale Auth Key](https://login.tailscale.com/admin/settings/keys) 
 
 The token needs to be `Single-use`, `Ephemeral`, and should have the `ci` tag.
 
-Go to [Github Action secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions) and put the new key.
+Go to [Github Action secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions) and put the new
+key.
 
 Needs doing every 90 days.
 

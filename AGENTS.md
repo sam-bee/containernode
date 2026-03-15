@@ -9,7 +9,8 @@ It manages two layers:
 
 ## Key paths
 
-- `clusters/containernode/`: Flux bootstrap and cluster reconciliation objects. `infrastructure.yaml` points Flux at `./infrastructure/containernode`.
+- `clusters/containernode/`: Flux bootstrap and cluster reconciliation objects. `infrastructure.yaml` points Flux at
+  `./infrastructure/containernode`.
 - `infrastructure/containernode/`: Kubernetes manifests for workloads and platform components on this node.
 - `tailscale/`: Tailscale Serve config and the server-side deployment script.
 - `.github/workflows/`: automation, including Tailscale Serve deployment.
@@ -29,9 +30,11 @@ It manages two layers:
 - Prefer declarative manifest changes over ad hoc scripts.
 - Keep solutions simple for a single-node, single-operator environment.
 - Keep Kubernetes config under `infrastructure/` and host-level Tailscale config under `tailscale/`.
-- Avoid editing generated Flux files under `clusters/containernode/flux-system` unless you are intentionally regenerating them.
+- Avoid editing generated Flux files under `clusters/containernode/flux-system` unless you are intentionally
+  regenerating them.
 - Treat the repository as live infrastructure and favor small, clear, reversible changes.
 
 ## Privacy and Security
 
-Please do not put the tailnet name or any credentials in version control. a `.sops.yaml` file is available for secrets management.
+Please do not put the tailnet name or any credentials in version control. a `.sops.yaml` file is available for secrets
+management.

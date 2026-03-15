@@ -7,7 +7,8 @@ Deployment is handled by:
 - `.github/workflows/deploy-tailscale-serve.yml`
 - `tailscale/update-serve-config.sh`
 
-The workflow connects to `containernode` over Tailscale SSH and runs the server-side script. That script resets the remote checkout to `origin/main` and applies `tailscale/serve-config.json` with `tailscale serve set-config`.
+The workflow connects to `containernode` over Tailscale SSH and runs the server-side script. That script resets the
+remote checkout to `origin/main` and applies `tailscale/serve-config.json` with `tailscale serve set-config`.
 
 When editing this directory:
 
