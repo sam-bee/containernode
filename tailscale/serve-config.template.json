@@ -1,0 +1,12 @@
+{
+  "TCP": {},
+  "Web": {
+    "jellyfin.${TAILNET_NAME}.ts.net": {
+      "Handlers": {
+        "/": {
+          "Proxy": "http://127.0.0.1:8096"
+        }
+      }
+    }
+  }
+}
