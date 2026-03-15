@@ -8,5 +8,3 @@ resources:
   - persistentvolumeclaim-media.yaml
   - deployment.yaml
   - service.yaml
-  - middleware-tailscale-only.yaml
-  - ingress.yaml

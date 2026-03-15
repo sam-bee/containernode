@@ -18,6 +18,8 @@ spec:
           image: jellyfin/jellyfin:10.11.6
           ports:
             - containerPort: 8096
+              hostIP: 127.0.0.1
+              hostPort: 8096
               name: http
           volumeMounts:
             - name: config
