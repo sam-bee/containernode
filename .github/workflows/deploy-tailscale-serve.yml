@@ -16,6 +16,7 @@ jobs:
 
     env:
       CONTAINERNODE_HOST: containernode
+      USER_AT_HOST: "sierra@containernode"
       REMOTE_REPO_DIR: /opt/containernode-github-repo/containernode
       REMOTE_SCRIPT: /opt/containernode-github-repo/containernode/tailscale/update-serve-config.sh
 
@@ -39,7 +40,7 @@ jobs:
       - name: Ensure remote script is executable
         run: |
           set -euo pipefail
-          tailscale ssh "$CONTAINERNODE_HOST" "chmod +x '$REMOTE_SCRIPT'"
+          tailscale ssh "$USER_AT_HOST" "chmod +x '$REMOTE_SCRIPT'"
 
       - name: Deploy serve config on containernode
         env:
@@ -47,12 +48,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          tailscale ssh "$CONTAINERNODE_HOST" \
+          tailscale ssh "$USER_AT_HOST" \
             "export TAILNET_NAME='$TAILNET_NAME'; export GITHUB_SHA='${GITHUB_SHA}'; export GITHUB_REF_NAME='${GITHUB_REF_NAME}'; '$REMOTE_SCRIPT'"
 
       - name: Show remote Tailscale status on failure
         if: failure()
         run: |
           set +e
-          tailscale ssh "$CONTAINERNODE_HOST" "tailscale status || true"
-          tailscale ssh "$CONTAINERNODE_HOST" "tailscale serve status || true"
+          tailscale ssh "$USER_AT_HOST" "tailscale status || true"
+          tailscale ssh "$USER_AT_HOST" "tailscale serve status || true"
