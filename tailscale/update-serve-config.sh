@@ -44,7 +44,7 @@ log "Rendered config file: $RENDERED_FILE"
 test -f "$RENDERED_FILE"
 
 log "Applying Tailscale Serve config"
-tailscale serve set-config "$RENDERED_FILE" --all
+tailscale serve set-config --all "$RENDERED_FILE"
 
 log "Tailscale Serve config applied successfully"
 dump_tailscale_debug
