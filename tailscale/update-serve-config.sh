@@ -35,6 +35,7 @@ git fetch --all;
 git switch --detach origin/main;
 
 : "${TAILNET_NAME:?TAILNET_NAME is not set}"
+export TAILNET_NAME
 
 log "Rendering serve config from template"
 envsubst '${TAILNET_NAME}' < "$TEMPLATE_FILE" > "$RENDERED_FILE"
