@@ -34,7 +34,7 @@ git fetch --all;
 git switch --detach origin/main;
 
 log "Applying Tailscale Serve config"
-tailscale serve set-config --all "$SERVE_CONFIG_FILE"
+tailscale serve set-config "$SERVE_CONFIG_FILE"
 
 log "Tailscale Serve config applied successfully"
 dump_tailscale_debug
