@@ -2,8 +2,6 @@
 set -Eeuo pipefail
 
 REPO_DIR="/opt/containernode-github-repo/containernode"
-TAILSCALE_DIR="$REPO_DIR/tailscale"
-SERVE_CONFIG_FILE="$TAILSCALE_DIR/serve-config.json"
 
 log() {
   printf '[update-serve-config] %s\n' "$*" >&2
@@ -34,7 +32,7 @@ git fetch --all;
 git switch --detach origin/main;
 
 log "Applying Tailscale Serve config"
-tailscale serve set-config --all "$SERVE_CONFIG_FILE"
+tailscale serve --service=svc:jellyfin --https=443 http://127.0.0.1:8096
 
 log "Tailscale Serve config applied successfully"
 dump_tailscale_debug
