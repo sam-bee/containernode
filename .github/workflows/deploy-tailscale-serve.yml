@@ -37,11 +37,6 @@ jobs:
           tailscale status
           tailscale ping --timeout=10s "$CONTAINERNODE_HOST"
 
-      - name: Ensure remote script is executable
-        run: |
-          set -euo pipefail
-          tailscale ssh "$USER_AT_HOST" "chmod +x '$REMOTE_SCRIPT'"
-
       - name: Deploy serve config on containernode
         env:
           TAILNET_NAME: ${{ secrets.TAILNET_NAME }}

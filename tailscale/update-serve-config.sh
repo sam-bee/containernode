@@ -40,6 +40,9 @@ export TAILNET_NAME
 log "Rendering serve config from template"
 envsubst '${TAILNET_NAME}' < "$TEMPLATE_FILE" > "$RENDERED_FILE"
 
+log "Rendered config file: $RENDERED_FILE"
+test -f "$RENDERED_FILE"
+
 log "Applying Tailscale Serve config"
 tailscale serve set-config "$RENDERED_FILE" --all
 
