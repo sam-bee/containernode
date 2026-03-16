@@ -57,3 +57,31 @@ immediately:
 ```bash
 kubectl rollout restart deployment/transmission -n transmission
 ```
+
+
+## Allow Transmission's WireGuard sysctl on k3s
+
+The Transmission pod sets `net.ipv4.conf.all.src_valid_mark=1` so the WireGuard policy-routing path can start cleanly.
+On this node, kubelet must explicitly allowlist that unsafe sysctl or the pod will be rejected with
+`SysctlForbidden`.
+
+The tracked drop-in file is:
+
+`host/containernode/etc/rancher/k3s/config.yaml.d/90-kubelet-unsafe-sysctls.yaml`
+
+Apply it on `containernode` and restart k3s:
+
+```bash
+sudo install -D -m 0644 \
+  /opt/containernode-github-repo/containernode/host/containernode/etc/rancher/k3s/config.yaml.d/90-kubelet-unsafe-sysctls.yaml \
+  /etc/rancher/k3s/config.yaml.d/90-kubelet-unsafe-sysctls.yaml
+
+sudo systemctl restart k3s
+```
+
+Verify the node and workload recover:
+
+```bash
+kubectl get nodes
+kubectl get pods -n transmission -w
+```

@@ -1,0 +1,2 @@
+kubelet-arg+:
+  - allowed-unsafe-sysctls=net.ipv4.conf.all.src_valid_mark

@@ -2,7 +2,7 @@
 
 This repository is the source of truth for `containernode`, a small self-hosted k3s control-plane node.
 
-It manages two layers:
+It primarily manages two layers:
 
 - Kubernetes state, reconciled by Flux
 - host-level Tailscale Serve routing
@@ -12,6 +12,7 @@ It manages two layers:
 - `clusters/containernode/`: Flux bootstrap and cluster reconciliation objects. `infrastructure.yaml` points Flux at
   `./infrastructure/containernode`.
 - `infrastructure/containernode/`: Kubernetes manifests for workloads and platform components on this node.
+- `host/containernode/`: host-local configuration files that should be applied manually on the node when needed.
 - `tailscale/`: Tailscale Serve config and the server-side deployment script.
 - `.github/workflows/`: automation, including Tailscale Serve deployment.
 - `docs/`: small operational runbooks.
@@ -29,7 +30,8 @@ It manages two layers:
 
 - Prefer declarative manifest changes over ad hoc scripts.
 - Keep solutions simple for a single-node, single-operator environment.
-- Keep Kubernetes config under `infrastructure/` and host-level Tailscale config under `tailscale/`.
+- Keep Kubernetes config under `infrastructure/`, host-level Tailscale config under `tailscale/`, and manual host
+  k3s config under `host/containernode/`.
 - Avoid editing generated Flux files under `clusters/containernode/flux-system` unless you are intentionally
   regenerating them.
 - Treat the repository as live infrastructure and favor small, clear, reversible changes.
