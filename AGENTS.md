@@ -50,4 +50,4 @@ Preferred commit message format: `To/Because/For [reason for change], [what was 
 E.g.: `To make it run faster, fix the thing that was slow`
 
 This gives a reason for the change, and says what you did. It is an appropriate format of commit message if your
-changeset is fairly small.
+changeset is fairly small. For larger changesets, you may need a few bullet points to communicate your changes.
