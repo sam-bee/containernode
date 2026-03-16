@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-REPO_DIR="/opt/containernode-github-repo/containernode"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SERVE_SCRIPT="$SCRIPT_DIR/run-tailscale-serve.sh"
 
 log() {
   printf '[update-serve-config] %s\n' "$*" >&2
@@ -31,9 +33,8 @@ git reset --hard HEAD;
 git fetch --all;
 git switch --detach origin/main;
 
-log "Applying Tailscale Serve config"
-tailscale serve --service=svc:jellyfin --https=443 http://127.0.0.1:8096
-tailscale serve --service=svc:transmission --https=443 http://127.0.0.1:9091
+log "Applying Tailscale Serve config with $SERVE_SCRIPT"
+"$SERVE_SCRIPT"
 
 log "Tailscale Serve config applied successfully"
 dump_tailscale_debug
