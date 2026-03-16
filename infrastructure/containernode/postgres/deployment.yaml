@@ -27,9 +27,29 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+        - name: prepare-tls
+          image: busybox:1.36.1
+          command:
+            - /bin/sh
+            - -c
+            - cp /tls-secret/server.crt /tls/server.crt && cp /tls-secret/server.key /tls/server.key && chown 999:999 /tls/server.crt /tls/server.key && chmod 0644 /tls/server.crt && chmod 0600 /tls/server.key
+          volumeMounts:
+            - name: postgres-tls-secret
+              mountPath: /tls-secret
+            - name: postgres-tls
+              mountPath: /tls
       containers:
         - name: postgres
           image: postgres:17
+          args:
+            - -c
+            - ssl=on
+            - -c
+            - ssl_cert_file=/etc/postgres-tls/server.crt
+            - -c
+            - ssl_key_file=/etc/postgres-tls/server.key
+            - -c
+            - ssl_min_protocol_version=TLSv1.2
           env:
             - name: POSTGRES_DB
               valueFrom:
@@ -80,7 +100,16 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+            - name: postgres-tls
+              mountPath: /etc/postgres-tls
+              readOnly: true
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-data
+        - name: postgres-tls-secret
+          secret:
+            secretName: postgres-tls
+            defaultMode: 0400
+        - name: postgres-tls
+          emptyDir: {}
