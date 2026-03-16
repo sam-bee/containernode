@@ -1,6 +1,6 @@
 # Tailscale Files
 
-`tailscale/serve-config.json` is the active Tailscale Serve config tracked in this repository.
+Tailscale Serve state is deployed from `tailscale/update-serve-config.sh`.
 
 Deployment is handled by:
 
@@ -8,10 +8,10 @@ Deployment is handled by:
 - `tailscale/update-serve-config.sh`
 
 The workflow connects to `containernode` over Tailscale SSH and runs the server-side script. That script resets the
-remote checkout to `origin/main` and applies `tailscale/serve-config.json` with `tailscale serve set-config`.
+remote checkout to `origin/main` and applies the current `tailscale serve` service mappings directly.
 
 When editing this directory:
 
-- update `serve-config.json`
+- update `update-serve-config.sh`
 - keep upstream ports aligned with the service actually listening on the host
 - prefer host-local upstreams such as `127.0.0.1:PORT`
