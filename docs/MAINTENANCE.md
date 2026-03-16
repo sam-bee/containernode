@@ -1,16 +1,46 @@
 # Maintenance Runbooks
 
 
-## Expired Tailscale Auth Key
+## Fixing Tailscale CI Authentication
 
-Go to the [Tailscale Auth Key](https://login.tailscale.com/admin/settings/keys) page and get a new one.
+GitHub Actions now connects to Tailscale through the `tailscale/github-action@v4` OAuth client flow, not a stored auth
+key. If the workflow fails with a Tailscale authentication error, rotate or recreate the OAuth client credentials and
+update the GitHub Actions secrets.
 
-The token needs to be `Single-use`, `Ephemeral`, and should have the `ci` tag.
+### 1. Create or recreate the OAuth client
 
-Go to [GitHub Actions secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions) and put the new
-key.
+Open [Tailscale OAuth clients](https://login.tailscale.com/admin/settings/oauth).
 
-Needs doing every 90 days.
+Create a client that can provision CI runners with:
+
+* the `auth_keys` scope required by the GitHub Action (shown in the admin UI as Auth Keys write)
+* `tag:ci` in the allowed tags list
+
+Copy the generated:
+
+* **Client ID**
+* **Client Secret**
+
+### 2. Update GitHub secrets
+
+Open [GitHub Actions secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions).
+
+Update:
+
+```text
+TS_OAUTH_CLIENT_ID
+TS_OAUTH_SECRET
+```
+
+Unlike the old auth-key flow, there is no scheduled 90-day key rotation here. Only rotate these values if the OAuth
+client is revoked, replaced, or the workflow starts failing authentication.
+
+### 3. Re-run the workflow
+
+Re-run the failed workflow.
+
+If authentication succeeds, a temporary machine named like `gha-tailscale-serve-*` should briefly appear in the
+[Tailscale machines view](https://login.tailscale.com/admin/machines) with the `tag:ci` tag.
 
 See the GitHub token note below.
 
