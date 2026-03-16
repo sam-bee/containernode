@@ -6,6 +6,6 @@ resources:
   - persistentvolumeclaim.yaml
   - persistentvolume-incoming.yaml
   - persistentvolumeclaim-incoming.yaml
-  - scripts-configmap.yaml
+  - scripts
   - proton-wireguard.secret.sops.yaml
   - deployment.yaml
