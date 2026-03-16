@@ -6,4 +6,5 @@ resources:
   - traefik
   - jellyfin
   - monero
+  - postgres
   - transmission
