@@ -38,3 +38,14 @@ It manages two layers:
 
 Please do not put the tailnet name or any credentials in version control. a `.sops.yaml` file is available for secrets
 management.
+
+## Version Control Guidelines
+
+We are typically developing against the `main` branch directly.
+
+Preferred commit message format: `To/Because/For [reason for change], [what was altered]`
+
+E.g.: `To make it run faster, fix the thing that was slow`
+
+This gives a reason for the change, and says what you did. It is an appropriate format of commit message if your
+changeset is fairly small.
