@@ -80,6 +80,8 @@ spec:
               value: "1000"
             - name: TZ
               value: Europe/London
+            - name: TR_COPY_DEST_ROOT
+              value: /incoming
           ports:
             - name: http
               containerPort: 9091
@@ -92,6 +94,11 @@ spec:
             - name: transmission-data
               mountPath: /downloads
               subPath: downloads
+            - name: transmission-incoming
+              mountPath: /incoming
+            - name: transmission-scripts
+              mountPath: /custom-scripts
+              readOnly: true
         - name: proton-port-forward
           image: python:3.13-alpine
           command:
@@ -111,6 +118,9 @@ spec:
         - name: transmission-data
           persistentVolumeClaim:
             claimName: transmission-data
+        - name: transmission-incoming
+          persistentVolumeClaim:
+            claimName: transmission-incoming
         - name: transmission-scripts
           configMap:
             name: transmission-scripts

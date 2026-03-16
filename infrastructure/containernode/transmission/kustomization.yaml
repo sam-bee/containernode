@@ -4,6 +4,8 @@ resources:
   - namespace.yaml
   - persistentvolume.yaml
   - persistentvolumeclaim.yaml
+  - persistentvolume-incoming.yaml
+  - persistentvolumeclaim-incoming.yaml
   - scripts-configmap.yaml
   - proton-wireguard.secret.sops.yaml
   - deployment.yaml

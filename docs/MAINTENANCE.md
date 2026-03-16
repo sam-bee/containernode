@@ -59,6 +59,16 @@ kubectl rollout restart deployment/transmission -n transmission
 ```
 
 
+## Transmission completed-download copy destination
+
+Transmission now runs a torrent-done hook that copies completed files into `/mnt/helsinki1-media/media/incoming` on
+`containernode`. The workload reaches that path through the `transmission-incoming` hostPath PV/PVC.
+
+That hostPath is intentionally declared with `type: Directory`, not `DirectoryOrCreate`, so the pod will fail to start
+if the NFS mount is missing and the node only has an empty local path. Keep the mount present before restarting or
+redeploying the Transmission workload.
+
+
 ## Allow Transmission's WireGuard sysctl on k3s
 
 The Transmission pod sets `net.ipv4.conf.all.src_valid_mark=1` so the WireGuard policy-routing path can start cleanly.
