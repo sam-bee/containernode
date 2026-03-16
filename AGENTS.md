@@ -2,9 +2,10 @@
 
 This repository is the source of truth for `containernode`, a small self-hosted k3s control-plane node.
 
-It primarily manages two layers:
+It primarily manages three related areas:
 
 - Kubernetes state, reconciled by Flux
+- manually applied host-level k3s configuration for this node
 - host-level Tailscale Serve routing
 
 ## Key paths
@@ -38,7 +39,7 @@ It primarily manages two layers:
 
 ## Privacy and Security
 
-Please do not put the tailnet name or any credentials in version control. a `.sops.yaml` file is available for secrets
+Please do not put the tailnet name or any credentials in version control. A `.sops.yaml` file is available for secrets
 management.
 
 ## Version Control Guidelines

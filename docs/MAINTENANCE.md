@@ -7,15 +7,15 @@ Go to the [Tailscale Auth Key](https://login.tailscale.com/admin/settings/keys) 
 
 The token needs to be `Single-use`, `Ephemeral`, and should have the `ci` tag.
 
-Go to [Github Action secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions) and put the new
+Go to [GitHub Actions secrets config](https://github.com/sam-bee/containernode/settings/secrets/actions) and put the new
 key.
 
 Needs doing every 90 days.
 
-See Github tokens below
+See the GitHub token note below.
 
 
-## Expired Github token on server
+## Expired GitHub token on server
 
 SSH into `containernode` server, and locate token in `/opt/containernode-github-repo`. Update.
 
@@ -67,6 +67,31 @@ Transmission now runs a torrent-done hook that copies completed files into `/mnt
 That hostPath is intentionally declared with `type: Directory`, not `DirectoryOrCreate`, so the pod will fail to start
 if the NFS mount is missing and the node only has an empty local path. Keep the mount present before restarting or
 redeploying the Transmission workload.
+
+
+## Transmission storage path and size changes
+
+Transmission's main data PV is rooted at `/mnt/erithc-clusterfiles/k3s-volumes/transmission`.
+
+Be careful changing either the `hostPath` or the requested PV/PVC size after the objects already exist:
+
+- the PV source path is immutable once created
+- the PVC size cannot be reduced after creation
+
+For this workload, those changes are effectively a delete-and-recreate operation, not a normal in-place Flux update.
+
+Safe operator sequence:
+
+```bash
+kubectl scale deployment/transmission -n transmission --replicas=0
+kubectl delete pod -n transmission -l app=transmission --force --grace-period=0 --wait=false
+kubectl delete pvc transmission-data -n transmission
+kubectl delete pv transmission-data
+flux reconcile kustomization infrastructure -n flux-system --with-source
+```
+
+If the storage path itself is moving on disk, move the host directory first while Transmission is scaled down, then let
+Flux recreate the PV/PVC against the new path.
 
 
 ## Allow Transmission's WireGuard sysctl on k3s
