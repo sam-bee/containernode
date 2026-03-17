@@ -52,6 +52,17 @@ SSH into `containernode` server, and locate token in `/opt/containernode-github-
 The token needs read permissions on this repository only, and no other privileges.
 
 
+## Grafana admin access
+
+Grafana runs in the `observability` namespace and is exposed via the Tailscale Serve service `svc:grafana`.
+
+The Grafana chart generates the initial admin password inside the cluster. Retrieve it with:
+
+```bash
+kubectl get secret grafana -n observability -o jsonpath='{.data.admin-password}' | base64 -d && echo
+```
+
+
 ## Rotate ProtonVPN WireGuard config for Transmission
 
 Generate a fresh ProtonVPN WireGuard config and place it at the repository root as `wireguard-protonvpn.conf`.

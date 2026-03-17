@@ -5,6 +5,7 @@ resources:
   - cert-manager
   - chat
   - traefik
+  - observability
   - jellyfin
   - monero
   - postgres
