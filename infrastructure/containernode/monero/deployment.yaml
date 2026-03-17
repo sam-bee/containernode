@@ -4,7 +4,7 @@ metadata:
   name: monero-node
   namespace: monero
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: monero-node
@@ -17,9 +17,11 @@ spec:
         - name: monero
           image: ghcr.io/sethforprivacy/simple-monerod:latest
           args:
+            - "--non-interactive"
             - "--p2p-bind-ip=0.0.0.0"
             - "--p2p-bind-port=18080"
             - "--prune-blockchain"
+            - "--sync-pruned-blocks"
             - "--data-dir=/home/monero/.bitmonero"
           ports:
             - containerPort: 18080
@@ -29,6 +31,5 @@ spec:
               mountPath: /home/monero/.bitmonero
       volumes:
         - name: blockchain-data
-          hostPath:
-            path: /mnt/erithc-clusterfiles/k3s-volumes/monero
-            type: Directory
+          persistentVolumeClaim:
+            claimName: monero-data
