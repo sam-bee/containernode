@@ -5,6 +5,7 @@ metadata:
   namespace: gitlab
 spec:
   interval: 30m
+  timeout: 20m
   chart:
     spec:
       chart: gitlab
@@ -15,6 +16,11 @@ spec:
         namespace: flux-system
   install:
     createNamespace: false
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
   valuesFrom:
     - kind: Secret
       name: gitlab-hosts
