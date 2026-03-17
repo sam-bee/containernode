@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespaces.yaml
   - cert-manager
+  - chat
   - traefik
   - jellyfin
   - monero

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat
+  namespace: chat
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chat
+  template:
+    metadata:
+      labels:
+        app: chat
+    spec:
+      containers:
+        - name: chat
+          image: ghcr.io/open-webui/open-webui:v0.6.43
+          env:
+            - name: WEBUI_NAME
+              value: Chat
+            - name: WEBUI_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: chat-webui
+                  key: secret-key
+          ports:
+            - containerPort: 8080
+              hostIP: 127.0.0.1
+              hostPort: 8080
+              name: http
+          volumeMounts:
+            - name: chat-data
+              mountPath: /app/backend/data
+      volumes:
+        - name: chat-data
+          persistentVolumeClaim:
+            claimName: chat-data
