@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - persistentvolume.yaml
   - persistentvolumeclaim.yaml
+  - chat-db.secret.sops.yaml
   - chat-webui.secret.sops.yaml
   - deployment.yaml
   - service.yaml
