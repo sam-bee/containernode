@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - helmrepository.yaml
+  - persistentvolume-gitaly.yaml
+  - persistentvolume-minio.yaml
+  - persistentvolume-redis.yaml
+  - persistentvolumeclaim-redis.yaml
+  - gitlab-db.secret.sops.yaml
+  - gitlab-hosts.secret.sops.yaml
+  - gitlab-initial-root-password.secret.sops.yaml
+  - helmrelease.yaml
