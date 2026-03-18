@@ -5,6 +5,7 @@ resources:
   - helmrepository.yaml
   - grafana-persistentvolume.yaml
   - grafana-persistentvolumeclaim.yaml
+  - grafana-postgres-auth.secret.sops.yaml
   - loki-persistentvolume.yaml
   - loki-helmrelease.yaml
   - grafana-helmrelease.yaml

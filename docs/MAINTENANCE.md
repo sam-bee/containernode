@@ -63,6 +63,51 @@ kubectl get secret grafana -n observability -o jsonpath='{.data.admin-password}'
 ```
 
 
+## Switch Grafana to Postgres
+
+Grafana is configured to read its database settings from the Secret
+`infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml`.
+
+Create the Grafana database and role from the existing Postgres pod:
+
+```bash
+export GRAFANA_DB_PASSWORD="$(openssl rand -hex 24)"
+
+kubectl exec -n postgres deploy/postgres -- \
+  env GRAFANA_DB_PASSWORD="$GRAFANA_DB_PASSWORD" \
+  sh -ec '
+    psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<SQL
+    CREATE ROLE grafana LOGIN PASSWORD '"'$GRAFANA_DB_PASSWORD'"';
+    CREATE DATABASE grafana OWNER grafana;
+SQL
+  '
+```
+
+Then overwrite the placeholder Secret manifest with an encrypted one:
+
+```bash
+kubectl create secret generic grafana-postgres-auth \
+  --namespace observability \
+  --from-literal=GF_DATABASE_TYPE=postgres \
+  --from-literal=GF_DATABASE_HOST=postgres.postgres.svc.cluster.local:5432 \
+  --from-literal=GF_DATABASE_NAME=grafana \
+  --from-literal=GF_DATABASE_USER=grafana \
+  --from-literal=GF_DATABASE_PASSWORD="$GRAFANA_DB_PASSWORD" \
+  --from-literal=GF_DATABASE_SSL_MODE=disable \
+  --dry-run=client -o yaml \
+  | sops -e \
+      --filename-override infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml \
+      --input-type yaml --output-type yaml /dev/stdin \
+  > infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml
+```
+
+After Flux applies the encrypted Secret, restart Grafana so the new environment variables are picked up:
+
+```bash
+kubectl rollout restart deployment/grafana -n observability
+```
+
+
 ## Rotate ProtonVPN WireGuard config for Transmission
 
 Generate a fresh ProtonVPN WireGuard config and place it at the repository root as `wireguard-protonvpn.conf`.

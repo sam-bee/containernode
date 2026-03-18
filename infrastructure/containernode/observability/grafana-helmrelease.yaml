@@ -28,6 +28,7 @@ spec:
     persistence:
       enabled: true
       existingClaim: grafana-data
+    envFromSecret: grafana-postgres-auth
     datasources:
       datasources.yaml:
         apiVersion: 1
