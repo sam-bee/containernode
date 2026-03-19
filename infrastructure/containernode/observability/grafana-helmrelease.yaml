@@ -25,6 +25,10 @@ spec:
       retries: 3
   values:
     fullnameOverride: grafana
+    deploymentStrategy:
+      type: Recreate
+    initChownData:
+      enabled: false
     persistence:
       enabled: true
       existingClaim: grafana-data
