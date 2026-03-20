@@ -85,8 +85,6 @@ spec:
           ports:
             - name: http
               containerPort: 9091
-              hostIP: 127.0.0.1
-              hostPort: 9091
           volumeMounts:
             - name: transmission-data
               mountPath: /config
@@ -98,6 +96,18 @@ spec:
               mountPath: /incoming
             - name: transmission-scripts
               mountPath: /custom-scripts
+              readOnly: true
+        - name: access-proxy
+          image: nginx:1.27.5-alpine
+          ports:
+            - name: access-proxy
+              containerPort: 19091
+              hostIP: 127.0.0.1
+              hostPort: 19091
+          volumeMounts:
+            - name: access-proxy-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
               readOnly: true
         - name: proton-port-forward
           image: python:3.13-alpine
@@ -115,6 +125,9 @@ spec:
         - name: proton-wireguard
           secret:
             secretName: transmission-proton-wireguard
+        - name: access-proxy-config
+          configMap:
+            name: transmission-access-proxy
         - name: transmission-data
           persistentVolumeClaim:
             claimName: transmission-data

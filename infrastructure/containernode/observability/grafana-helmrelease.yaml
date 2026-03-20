@@ -48,6 +48,8 @@ spec:
       analytics:
         check_for_updates: false
         reporting_enabled: false
+      server:
+        router_logging: true
   postRenderers:
     - kustomize:
         patches:
