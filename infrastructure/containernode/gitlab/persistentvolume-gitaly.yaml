@@ -12,5 +12,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/helsinki1-code/gitlab
+    path: /mnt/erithc-clusterfiles/k3s-volumes/storage-code/gitlab
     type: DirectoryOrCreate

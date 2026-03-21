@@ -147,8 +147,9 @@ kubectl rollout restart deployment/transmission -n transmission
 
 ## Transmission completed-download copy destination
 
-Transmission now runs a torrent-done hook that copies completed files into `/mnt/helsinki1-media/media/incoming` on
-`containernode`. The workload reaches that path through the `transmission-incoming` hostPath PV/PVC.
+Transmission now runs a torrent-done hook that copies completed files into
+`/mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming` on `containernode`. The workload reaches that
+path through the `transmission-incoming` hostPath PV/PVC.
 
 That hostPath is intentionally declared with `type: Directory`, not `DirectoryOrCreate`, so the pod will fail to start
 if the NFS mount is missing and the node only has an empty local path. Keep the mount present before restarting or
@@ -157,7 +158,10 @@ redeploying the Transmission workload.
 
 ## Transmission storage path and size changes
 
-Transmission's main data PV is rooted at `/mnt/erithc-clusterfiles/k3s-volumes/transmission`.
+Transmission's writable PVs are rooted at:
+
+- `/mnt/erithc-clusterfiles/k3s-volumes/transmission`
+- `/mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming`
 
 Be careful changing either the `hostPath` or the requested PV/PVC size after the objects already exist:
 
@@ -166,18 +170,20 @@ Be careful changing either the `hostPath` or the requested PV/PVC size after the
 
 For this workload, those changes are effectively a delete-and-recreate operation, not a normal in-place Flux update.
 
-Safe operator sequence:
+Safe operator sequence when either Transmission host path is moving:
 
 ```bash
 kubectl scale deployment/transmission -n transmission --replicas=0
 kubectl delete pod -n transmission -l app=transmission --force --grace-period=0 --wait=false
 kubectl delete pvc transmission-data -n transmission
 kubectl delete pv transmission-data
+kubectl delete pvc transmission-incoming -n transmission
+kubectl delete pv transmission-incoming
 flux reconcile kustomization infrastructure -n flux-system --with-source
 ```
 
-If the storage path itself is moving on disk, move the host directory first while Transmission is scaled down, then let
-Flux recreate the PV/PVC against the new path.
+If only one of those host paths is moving, delete and recreate only that PV/PVC pair. Move the host directory first
+while Transmission is scaled down, then let Flux recreate the PV/PVC against the new path.
 
 
 ## Allow Transmission's WireGuard sysctl on k3s

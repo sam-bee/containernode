@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/helsinki1-media/media/incoming
+    path: /mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming
     type: Directory
   claimRef:
     namespace: transmission
