@@ -148,7 +148,7 @@ kubectl rollout restart deployment/transmission -n transmission
 ## Transmission completed-download copy destination
 
 Transmission now runs a torrent-done hook that copies completed files into
-`/mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming` on `containernode`. The workload reaches that
+`/mnt/twindrives-clusterfiles/storage-media/media/incoming` on `containernode`. The workload reaches that
 path through the `transmission-incoming` hostPath PV/PVC.
 
 That hostPath is intentionally declared with `type: Directory`, not `DirectoryOrCreate`, so the pod will fail to start
@@ -160,8 +160,8 @@ redeploying the Transmission workload.
 
 Transmission's writable PVs are rooted at:
 
-- `/mnt/erithc-clusterfiles/k3s-volumes/transmission`
-- `/mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming`
+- `/mnt/twindrives-clusterfiles/transmission`
+- `/mnt/twindrives-clusterfiles/storage-media/media/incoming`
 
 Be careful changing either the `hostPath` or the requested PV/PVC size after the objects already exist:
 

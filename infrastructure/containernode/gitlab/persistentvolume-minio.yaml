@@ -10,5 +10,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/gitlab-minio
+    path: /mnt/userdata-clusterfiles/gitlab-minio
     type: DirectoryOrCreate

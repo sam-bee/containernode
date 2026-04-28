@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/storage-media/media/incoming
+    path: /mnt/twindrives-clusterfiles/storage-media/media/incoming
     type: Directory
   claimRef:
     namespace: transmission

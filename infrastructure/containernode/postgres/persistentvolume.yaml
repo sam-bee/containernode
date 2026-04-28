@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/postgres
+    path: /mnt/userdata-clusterfiles/postgres
     type: DirectoryOrCreate
   claimRef:
     namespace: postgres

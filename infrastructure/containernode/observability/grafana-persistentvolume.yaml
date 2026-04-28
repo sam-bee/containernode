@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/observability-grafana
+    path: /mnt/userdata-clusterfiles/observability-grafana
     type: DirectoryOrCreate
   claimRef:
     namespace: observability

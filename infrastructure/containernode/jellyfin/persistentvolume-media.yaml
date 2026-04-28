@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/storage-media/media
+    path: /mnt/twindrives-clusterfiles/storage-media/media
     type: Directory
   claimRef:
     namespace: jellyfin

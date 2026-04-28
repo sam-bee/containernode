@@ -12,5 +12,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/erithc-clusterfiles/k3s-volumes/observability-loki
+    path: /mnt/userdata-clusterfiles/observability-loki
     type: DirectoryOrCreate
