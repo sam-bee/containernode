@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/userdata-clusterfiles/gitlab-redis
+    path: /mnt/userdata-clusterfiles/k3s-volumes/gitlab-redis
     type: DirectoryOrCreate
   claimRef:
     namespace: gitlab

@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/userdata-clusterfiles/jellyfin-config
+    path: /mnt/userdata-clusterfiles/k3s-volumes/jellyfin-config
     type: DirectoryOrCreate
   claimRef:
     namespace: jellyfin

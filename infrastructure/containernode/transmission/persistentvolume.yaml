@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/twindrives-clusterfiles/transmission
+    path: /mnt/twindrives-clusterfiles/k3s-volumes/transmission
     type: DirectoryOrCreate
   claimRef:
     namespace: transmission

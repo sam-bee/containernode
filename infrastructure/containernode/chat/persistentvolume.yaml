@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/userdata-clusterfiles/chat
+    path: /mnt/userdata-clusterfiles/k3s-volumes/chat
     type: DirectoryOrCreate
   claimRef:
     namespace: chat

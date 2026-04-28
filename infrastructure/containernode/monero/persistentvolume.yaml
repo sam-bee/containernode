@@ -10,7 +10,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   hostPath:
-    path: /mnt/twindrives-clusterfiles/monero
+    path: /mnt/twindrives-clusterfiles/k3s-volumes/monero
     type: DirectoryOrCreate
   claimRef:
     namespace: monero
