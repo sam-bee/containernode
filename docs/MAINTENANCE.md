@@ -186,6 +186,31 @@ If only one of those host paths is moving, delete and recreate only that PV/PVC 
 while Transmission is scaled down, then let Flux recreate the PV/PVC against the new path.
 
 
+## Syncthing tailnet-only setup
+
+Syncthing runs in the `syncthing` namespace. Its config is stored at
+`/mnt/userdata-clusterfiles/k3s-volumes/syncthing-config` and the shared data folder is mounted from
+`/mnt/workfiles/synced`.
+
+The pod binds its GUI and sync listener to localhost on `containernode`:
+
+- GUI: `127.0.0.1:8384`
+- Sync TCP: `127.0.0.1:22000`
+
+Tailscale Serve exposes those localhost listeners to the tailnet as:
+
+- `svc:syncthing-gui`
+- `svc:syncthing-sync`
+
+After first deploy, open the Syncthing GUI over Tailscale and configure it for private manual peering:
+
+- set a GUI username and password
+- add `/data` as the synced folder path
+- disable Global Discovery, Local Discovery, NAT traversal, and Relaying
+- add peer devices by Device ID
+- set peer addresses to Tailscale endpoints, for example `tcp://device-name:22000`
+
+
 ## Allow Transmission's WireGuard sysctl on k3s
 
 The Transmission pod sets `net.ipv4.conf.all.src_valid_mark=1` so the WireGuard policy-routing path can start cleanly.

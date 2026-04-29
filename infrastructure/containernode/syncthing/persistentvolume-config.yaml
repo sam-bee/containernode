@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: syncthing-config
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  hostPath:
+    path: /mnt/userdata-clusterfiles/k3s-volumes/syncthing-config
+    type: DirectoryOrCreate
+  claimRef:
+    namespace: syncthing
+    name: syncthing-config
