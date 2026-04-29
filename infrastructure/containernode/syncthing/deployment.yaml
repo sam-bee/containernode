@@ -17,6 +17,34 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+      initContainers:
+        - name: configure-tailnet-only
+          image: lscr.io/linuxserver/syncthing:2.0.10
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+
+              if [ ! -f /config/config.xml ]; then
+                syncthing generate --config=/config --no-default-folder --skip-port-probing
+              fi
+
+              sed -i \
+                -e 's#<listenAddress>.*</listenAddress>#<listenAddress>tcp://0.0.0.0:22000</listenAddress>#' \
+                -e 's#<globalAnnounceServer>.*</globalAnnounceServer>#<globalAnnounceServer></globalAnnounceServer>#' \
+                -e 's#<globalAnnounceEnabled>.*</globalAnnounceEnabled>#<globalAnnounceEnabled>false</globalAnnounceEnabled>#' \
+                -e 's#<localAnnounceEnabled>.*</localAnnounceEnabled>#<localAnnounceEnabled>false</localAnnounceEnabled>#' \
+                -e 's#<relaysEnabled>.*</relaysEnabled>#<relaysEnabled>false</relaysEnabled>#' \
+                -e 's#<startBrowser>.*</startBrowser>#<startBrowser>false</startBrowser>#' \
+                -e 's#<natEnabled>.*</natEnabled>#<natEnabled>false</natEnabled>#' \
+                -e 's#<stunServer>.*</stunServer>#<stunServer></stunServer>#' \
+                -e 's#<announceLANAddresses>.*</announceLANAddresses>#<announceLANAddresses>false</announceLANAddresses>#' \
+                -e 's#<crashReportingEnabled>.*</crashReportingEnabled>#<crashReportingEnabled>false</crashReportingEnabled>#' \
+                /config/config.xml
+          volumeMounts:
+            - name: config
+              mountPath: /config
       containers:
         - name: syncthing
           image: lscr.io/linuxserver/syncthing:2.0.10

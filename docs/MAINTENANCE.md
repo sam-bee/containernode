@@ -202,11 +202,13 @@ Tailscale Serve exposes those localhost listeners to the tailnet as:
 - `svc:syncthing-gui`
 - `svc:syncthing-sync`
 
-After first deploy, open the Syncthing GUI over Tailscale and configure it for private manual peering:
+The deployment rewrites the generated Syncthing config before startup so it uses only a TCP listener and disables
+global discovery, local discovery, relays, NAT traversal, STUN, and crash reporting.
+
+After first deploy, open the Syncthing GUI over Tailscale and finish manual peering:
 
 - set a GUI username and password
 - add `/data` as the synced folder path
-- disable Global Discovery, Local Discovery, NAT traversal, and Relaying
 - add peer devices by Device ID
 - set peer addresses to Tailscale endpoints, for example `tcp://device-name:22000`
 
