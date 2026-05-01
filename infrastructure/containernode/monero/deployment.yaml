@@ -4,7 +4,7 @@ metadata:
   name: monero-node
   namespace: monero
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: monero-node
