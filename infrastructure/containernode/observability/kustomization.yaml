@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - helmrepository.yaml
+  - helmrepository-grafana-community.yaml
   - grafana-persistentvolume.yaml
   - grafana-persistentvolumeclaim.yaml
   - grafana-postgres-auth.secret.sops.yaml
