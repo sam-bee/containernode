@@ -26,7 +26,7 @@ spec:
             value: "1"
       initContainers:
         - name: prepare-storage
-          image: busybox:1.36.1
+          image: busybox:1.37.0
           command:
             - /bin/sh
             - -c
@@ -35,7 +35,7 @@ spec:
             - name: transmission-data
               mountPath: /data
         - name: configure-killswitch
-          image: lscr.io/linuxserver/wireguard:latest
+          image: lscr.io/linuxserver/wireguard:1.0.20250521-r1-ls110
           command:
             - /bin/sh
             - /config-scripts/init-killswitch.sh
@@ -53,7 +53,7 @@ spec:
               readOnly: true
       containers:
         - name: protonvpn
-          image: lscr.io/linuxserver/wireguard:latest
+          image: lscr.io/linuxserver/wireguard:1.0.20250521-r1-ls110
           command:
             - /bin/sh
             - /config-scripts/run-wireguard.sh
@@ -72,7 +72,7 @@ spec:
             - name: wireguard-runtime
               mountPath: /run/wireguard
         - name: transmission
-          image: lscr.io/linuxserver/transmission:latest
+          image: lscr.io/linuxserver/transmission:4.1.1-r1-ls341
           env:
             - name: PUID
               value: "1000"
@@ -100,7 +100,7 @@ spec:
               mountPath: /custom-scripts
               readOnly: true
         - name: proton-port-forward
-          image: python:3.13-alpine
+          image: python:3.13.13-alpine
           command:
             - python
             - /config-scripts/proton-port-forward.py
