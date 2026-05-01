@@ -19,7 +19,7 @@ spec:
         fsGroup: 1000
       initContainers:
         - name: configure-tailnet-only
-          image: lscr.io/linuxserver/syncthing:2.0.10
+          image: lscr.io/linuxserver/syncthing:2.0.16-ls215
           command:
             - /bin/sh
             - -c
@@ -47,7 +47,7 @@ spec:
               mountPath: /config
       containers:
         - name: syncthing
-          image: lscr.io/linuxserver/syncthing:2.0.10
+          image: lscr.io/linuxserver/syncthing:2.0.16-ls215
           env:
             - name: PUID
               value: "1000"
