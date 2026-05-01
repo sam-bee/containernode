@@ -63,27 +63,38 @@ kubectl get secret grafana -n observability -o jsonpath='{.data.admin-password}'
 ```
 
 
-## Switch Grafana to Postgres
+## Maintain Grafana Postgres settings
 
-Grafana is configured to read its database settings from the Secret
+Grafana already reads its database settings from the Secret
 `infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml`.
 
-Create the Grafana database and role from the existing Postgres pod:
+If the Secret needs to be recreated, first create or rotate the Grafana database role from the existing Postgres pod:
 
 ```bash
 export GRAFANA_DB_PASSWORD="$(openssl rand -hex 24)"
 
-kubectl exec -n postgres deploy/postgres -- \
+kubectl exec -i -n postgres deploy/postgres -- \
   env GRAFANA_DB_PASSWORD="$GRAFANA_DB_PASSWORD" \
-  sh -ec '
-    psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<SQL
-    CREATE ROLE grafana LOGIN PASSWORD '"'$GRAFANA_DB_PASSWORD'"';
-    CREATE DATABASE grafana OWNER grafana;
+  sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+    -v grafana_password="$GRAFANA_DB_PASSWORD"' <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'grafana') THEN
+    CREATE ROLE grafana LOGIN;
+  END IF;
+END
+$$;
+
+ALTER ROLE grafana WITH PASSWORD :'grafana_password';
+
+SELECT 'CREATE DATABASE grafana OWNER grafana'
+WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'grafana')\gexec
+
+ALTER DATABASE grafana OWNER TO grafana;
 SQL
-  '
 ```
 
-Then overwrite the placeholder Secret manifest with an encrypted one:
+Then overwrite the encrypted Secret manifest:
 
 ```bash
 kubectl create secret generic grafana-postgres-auth \
@@ -101,7 +112,7 @@ kubectl create secret generic grafana-postgres-auth \
   > infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml
 ```
 
-After Flux applies the encrypted Secret, restart Grafana so the new environment variables are picked up:
+After Flux applies the encrypted Secret, restart Grafana so the environment variables are picked up:
 
 ```bash
 kubectl rollout restart deployment/grafana -n observability
@@ -184,6 +195,14 @@ flux reconcile kustomization infrastructure -n flux-system --with-source
 
 If only one of those host paths is moving, delete and recreate only that PV/PVC pair. Move the host directory first
 while Transmission is scaled down, then let Flux recreate the PV/PVC against the new path.
+
+If Flux reconciliation was suspended during a storage move, resume it after the host paths and PV/PVC objects are ready:
+
+```bash
+flux resume kustomization infrastructure -n flux-system
+flux reconcile kustomization infrastructure -n flux-system --with-source
+flux get kustomization infrastructure -n flux-system
+```
 
 
 ## Syncthing tailnet-only setup
