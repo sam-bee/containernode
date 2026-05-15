@@ -101,3 +101,18 @@ spec:
       replicas: 0
     bloomGateway:
       replicas: 0
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: apps
+              version: v1
+              kind: StatefulSet
+              name: loki
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/ports/0/hostIP
+                value: 127.0.0.1
+              - op: add
+                path: /spec/template/spec/containers/0/ports/0/hostPort
+                value: 3100
