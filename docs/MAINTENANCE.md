@@ -1,6 +1,23 @@
 # Maintenance Runbooks
 
 
+## Local kubectl access
+
+Some environments already have a default kubeconfig context set up for `containernode`. If `kubectl` falls back to
+`localhost:8080` or otherwise cannot find the cluster, it may be necessary to point it at the local copy of the
+`containernode` kubeconfig:
+
+```bash
+export KUBECONFIG="$HOME/.kube/containernode.yaml"
+```
+
+For one-off commands, prefix the command instead:
+
+```bash
+KUBECONFIG="$HOME/.kube/containernode.yaml" kubectl get nodes
+```
+
+
 ## Fixing Tailscale CI Authentication
 
 GitHub Actions now connects to Tailscale through the `tailscale/github-action@v4` OAuth client flow, not a stored auth
