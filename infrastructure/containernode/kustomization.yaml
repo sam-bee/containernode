@@ -12,3 +12,4 @@ resources:
   - transmission
   - gitlab
   - syncthing
+  - matrix

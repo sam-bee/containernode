@@ -249,6 +249,21 @@ After first deploy, open the Syncthing GUI over Tailscale and finish manual peer
 - set peer addresses to Tailscale endpoints, for example `tcp://device-name:22000`
 
 
+## Matrix Synapse tailnet-only setup
+
+Synapse runs in the `matrix` namespace and is exposed through Tailscale Serve as `svc:matrix`.
+
+The Synapse `server_name` is set to `matrix`, so local Matrix user IDs look like `@user:matrix`. Treat that value as
+effectively permanent after the homeserver first starts.
+
+Registration is disabled by default. After Synapse is running, create the first user from inside the pod:
+
+```bash
+kubectl exec -it -n matrix deploy/synapse -- \
+  register_new_matrix_user -c /run/synapse/homeserver.yaml http://localhost:8008
+```
+
+
 ## Allow Transmission's WireGuard sysctl on k3s
 
 The Transmission pod sets `net.ipv4.conf.all.src_valid_mark=1` so the WireGuard policy-routing path can start cleanly.
