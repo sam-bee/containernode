@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 tailscale serve --service=svc:chat --https=443 http://127.0.0.1:8080
+tailscale serve --service=svc:element --https=443 http://127.0.0.1:8081
 tailscale serve --service=svc:grafana --https=443 http://127.0.0.1:3000
 tailscale serve --service=svc:jellyfin --https=443 http://127.0.0.1:8096
 tailscale serve --service=svc:loki --https=443 http://127.0.0.1:3100

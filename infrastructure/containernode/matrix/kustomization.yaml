@@ -8,3 +8,6 @@ resources:
   - synapse-secrets.secret.sops.yaml
   - deployment.yaml
   - service.yaml
+  - element-web-configmap.yaml
+  - element-web-deployment.yaml
+  - element-web-service.yaml

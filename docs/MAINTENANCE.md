@@ -251,10 +251,15 @@ After first deploy, open the Syncthing GUI over Tailscale and finish manual peer
 
 ## Matrix Synapse tailnet-only setup
 
-Synapse runs in the `matrix` namespace and is exposed through Tailscale Serve as `svc:matrix`.
+Synapse runs in the `matrix` namespace and is exposed through Tailscale Serve as `svc:matrix`. Element Web also runs
+in the `matrix` namespace and is exposed as `svc:element`.
 
 The Synapse `server_name` is set to `matrix`, so local Matrix user IDs look like `@user:matrix`. Treat that value as
 effectively permanent after the homeserver first starts.
+
+Element Web generates its homeserver URL from the Tailscale service hostname at request time. When accessed as
+`element.[TAILNET_NAME].ts.net`, it points at `matrix.[TAILNET_NAME].ts.net` without storing the tailnet name in this
+repository.
 
 Registration is disabled by default. After Synapse is running, create the first user from inside the pod:
 

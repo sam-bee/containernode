@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: element-web-nginx
+  namespace: matrix
+data:
+  default.conf.template: |
+    map $http_host $tailnet_suffix {
+        "~^[^.:]+[.](?<tailnet>[^:]+)(?::[0-9]+)?$" $tailnet;
+        default "invalid";
+    }
+
+    server {
+        listen ${ELEMENT_WEB_PORT};
+        listen [::]:${ELEMENT_WEB_PORT};
+        server_name _;
+        root /app;
+        index index.html;
+
+        location = /config.json {
+            default_type application/json;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            return 200 '{
+              "default_server_config": {
+                "m.homeserver": {
+                  "base_url": "https://matrix.$tailnet_suffix",
+                  "server_name": "matrix"
+                }
+              },
+              "disable_custom_urls": false,
+              "disable_guests": true,
+              "disable_login_language_selector": false,
+              "disable_3pid_login": true,
+              "force_verification": false,
+              "brand": "Element",
+              "integrations_ui_url": "",
+              "integrations_rest_url": "",
+              "integrations_widgets_urls": [],
+              "default_country_code": "GB",
+              "show_labs_settings": false,
+              "features": {},
+              "default_federate": false,
+              "default_theme": "light",
+              "room_directory": {
+                "servers": ["matrix"]
+              },
+              "enable_presence_by_hs_url": {
+                "https://matrix.$tailnet_suffix": true
+              },
+              "setting_defaults": {
+                "breadcrumbs": true
+              },
+              "element_call": {
+                "disabled": true
+              },
+              "map_style_url": ""
+            }';
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
