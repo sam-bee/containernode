@@ -36,7 +36,6 @@ spec:
             - |
               cat > /run/synapse/homeserver.yaml <<EOF
               server_name: "matrix"
-              public_baseurl: "https://matrix/"
               pid_file: /data/homeserver.pid
 
               listeners:
