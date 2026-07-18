@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-config
+  namespace: openclaw
+data:
+  openclaw.json: |
+    {
+      "gateway": {
+        "mode": "local",
+        "bind": "lan",
+        "port": 18789,
+        "auth": {
+          "mode": "token",
+          "token": "${OPENCLAW_GATEWAY_TOKEN}"
+        },
+        "controlUi": {
+          "enabled": true
+        }
+      },
+      "agents": {
+        "defaults": {
+          "workspace": "~/.openclaw/workspace"
+        },
+        "list": [
+          {
+            "id": "default",
+            "name": "OpenClaw Assistant",
+            "workspace": "~/.openclaw/workspace"
+          }
+        ]
+      },
+      "cron": {
+        "enabled": false
+      },
+      "discovery": {
+        "mdns": {
+          "mode": "off"
+        }
+      }
+    }
+  AGENTS.md: |
+    # OpenClaw Assistant
+
+    You are a personal assistant running on a private Kubernetes node.
+
+    Do not assume that external services, paid APIs, or public exposure are acceptable. Ask before adding dependencies,
+    enabling integrations, or sending private data outside the configured model providers.

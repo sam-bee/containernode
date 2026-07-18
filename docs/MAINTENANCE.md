@@ -269,6 +269,68 @@ kubectl exec -it -n matrix deploy/synapse -- \
 ```
 
 
+## OpenClaw tailnet-only setup
+
+OpenClaw runs in the `openclaw` namespace and is exposed through Tailscale Serve as `svc:openclaw`. The gateway binds
+to `127.0.0.1:18789` on `containernode`; it is not exposed through Traefik or a public ingress.
+
+OpenClaw keeps its config, workspace, session data, credentials, and SQLite state under `/home/node/.openclaw`. That
+directory is backed by the retained hostPath volume at `/mnt/userdata-clusterfiles/k3s-volumes/openclaw`. It does not
+use the cluster Postgres service.
+
+### Create or rotate the gateway token
+
+Generate a new token with `openssl rand -hex 32`, store it in the password manager, then paste it into the silent prompt
+below. The command creates only the encrypted manifest; it does not apply a plaintext Secret to the cluster. The Docker
+invocation is used because `sops` is not otherwise required to be installed on the workstation.
+
+```bash
+printf 'OpenClaw gateway token: '
+IFS= read -r -s OPENCLAW_GATEWAY_TOKEN
+printf '\n'
+
+kubectl create secret generic openclaw-secrets \
+  --namespace openclaw \
+  --from-literal=OPENCLAW_GATEWAY_TOKEN="$OPENCLAW_GATEWAY_TOKEN" \
+  --dry-run=client -o yaml \
+  | docker run --rm -i \
+      -v "$PWD:/work" \
+      -w /work \
+      ghcr.io/getsops/sops:v3.13.2 \
+      --encrypt \
+      --filename-override infrastructure/containernode/openclaw/openclaw-secrets.secret.sops.yaml \
+      --input-type yaml --output-type yaml /dev/stdin \
+  > infrastructure/containernode/openclaw/openclaw-secrets.secret.sops.yaml
+
+unset OPENCLAW_GATEWAY_TOKEN
+```
+
+Commit only `openclaw-secrets.secret.sops.yaml`. After Flux applies a rotated token, restart the gateway so its process
+environment is refreshed:
+
+```bash
+kubectl rollout restart deployment/openclaw -n openclaw
+```
+
+### Configure the Tailscale Service
+
+Before pushing the initial OpenClaw manifests, define `svc:openclaw` in the Tailscale admin console with endpoint
+`tcp:443` and grant only the intended tailnet identities access to it. After the Tailscale Serve workflow advertises
+`containernode` as a host, approve that pending service host in the admin console.
+
+Verify the deployment and host-local listener before testing the Control UI over Tailscale:
+
+```bash
+kubectl get pods,pvc -n openclaw
+kubectl logs -n openclaw deploy/openclaw
+curl --fail --silent --show-error http://127.0.0.1:18789/readyz
+```
+
+Open the `svc:openclaw` MagicDNS HTTPS address and enter the gateway token in the Control UI. Provider API keys and
+local model endpoints are intentionally not part of the initial deployment. Add them later through SOPS-encrypted
+Secrets and environment-backed OpenClaw configuration; do not commit them to the ConfigMap or workspace.
+
+
 ## Allow Transmission's WireGuard sysctl on k3s
 
 The Transmission pod sets `net.ipv4.conf.all.src_valid_mark=1` so the WireGuard policy-routing path can start cleanly.
