@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: monero
-          image: ghcr.io/sethforprivacy/simple-monerod:latest
+          image: ghcr.io/sethforprivacy/simple-monerod:v0.18.5.1
           args:
             - "--p2p-bind-ip=0.0.0.0"
             - "--p2p-bind-port=18080"
