@@ -34,11 +34,6 @@ spec:
       mounts:
         varlog: true
         dockercontainers: false
-      extraEnv:
-        - name: HOSTNAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
       securityContext:
         runAsUser: 0
         runAsGroup: 0
@@ -190,7 +185,6 @@ spec:
       automountServiceAccountToken: true
     rbac:
       create: true
-      clusterRules: []
       rules:
         - apiGroups:
             - ""
