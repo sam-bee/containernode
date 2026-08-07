@@ -10,4 +10,4 @@ resources:
   - loki-persistentvolume.yaml
   - loki-helmrelease.yaml
   - grafana-helmrelease.yaml
-  - promtail-helmrelease.yaml
+  - alloy-helmrelease.yaml
