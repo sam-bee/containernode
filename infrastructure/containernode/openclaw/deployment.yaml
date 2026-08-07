@@ -60,7 +60,7 @@ spec:
               readOnly: true
       containers:
         - name: gateway
-          image: ghcr.io/openclaw/openclaw:2026.7.1-slim
+          image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
           command:
             - node
             - /app/dist/index.js
