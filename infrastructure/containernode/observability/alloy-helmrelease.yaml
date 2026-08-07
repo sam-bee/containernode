@@ -30,7 +30,7 @@ spec:
     alloy:
       enableReporting: false
       storagePath: /tmp/alloy
-      listenAddr: 127.0.0.1
+      listenAddr: 0.0.0.0
       mounts:
         varlog: true
         dockercontainers: false
