@@ -4,6 +4,7 @@ metadata:
   name: grafana
   namespace: observability
 spec:
+  suspend: false
   interval: 30m
   dependsOn:
     - name: loki
