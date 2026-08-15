@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres18
+  namespace: postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgres18
+  template:
+    metadata:
+      labels:
+        app: postgres18
+    spec:
+      securityContext:
+        fsGroup: 999
+      initContainers:
+        - name: prepare-data-dir
+          image: busybox:1.37.0
+          command:
+            - /bin/sh
+            - -c
+            - mkdir -p /var/lib/postgresql/18/docker && chown -R 999:999 /var/lib/postgresql
+          volumeMounts:
+            - name: postgres18-data
+              mountPath: /var/lib/postgresql
+        - name: prepare-tls
+          image: busybox:1.37.0
+          command:
+            - /bin/sh
+            - -c
+            - cp /tls-secret/server.crt /tls/server.crt && cp /tls-secret/server.key /tls/server.key && chown 999:999 /tls/server.crt /tls/server.key && chmod 0644 /tls/server.crt && chmod 0600 /tls/server.key
+          volumeMounts:
+            - name: postgres-tls-secret
+              mountPath: /tls-secret
+            - name: postgres-tls
+              mountPath: /tls
+      containers:
+        - name: postgres
+          image: postgres:18.6
+          args:
+            - -c
+            - ssl=on
+            - -c
+            - ssl_cert_file=/etc/postgres-tls/server.crt
+            - -c
+            - ssl_key_file=/etc/postgres-tls/server.key
+            - -c
+            - ssl_min_protocol_version=TLSv1.2
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: postgres-database
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: postgres-password
+            - name: PGDATA
+              value: /var/lib/postgresql/18/docker
+          ports:
+            - name: postgres
+              containerPort: 5432
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: postgres18-data
+              mountPath: /var/lib/postgresql
+            - name: postgres-tls
+              mountPath: /etc/postgres-tls
+              readOnly: true
+      volumes:
+        - name: postgres18-data
+          persistentVolumeClaim:
+            claimName: postgres18-data
+        - name: postgres-tls-secret
+          secret:
+            secretName: postgres-tls
+            defaultMode: 0400
+        - name: postgres-tls
+          emptyDir: {}

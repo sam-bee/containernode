@@ -8,3 +8,7 @@ resources:
   - postgres-tls.secret.sops.yaml
   - deployment.yaml
   - service.yaml
+  - postgres18-persistentvolume.yaml
+  - postgres18-persistentvolumeclaim.yaml
+  - postgres18-deployment.yaml
+  - postgres18-service.yaml
