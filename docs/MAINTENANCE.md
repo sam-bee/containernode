@@ -69,6 +69,38 @@ SSH into `containernode` server, and locate token in `/opt/containernode-github-
 The token needs read permissions on this repository only, and no other privileges.
 
 
+## Upgrade k3s
+
+The manually applied k3s target for `containernode` is pinned in `host/containernode/k3s-version`. The upgrade helper
+is specific to this single-node amd64 server and its SQLite datastore. It does not float on a release channel.
+
+Before changing the target, update Flux and cluster add-ons such as cert-manager to releases that support the target
+Kubernetes minor. Regenerate `clusters/containernode/flux-system/gotk-components.yaml` with the updated Flux CLI.
+Kubernetes control planes must not skip minor versions.
+
+From the repository root on `containernode`, run:
+
+```bash
+sudo host/containernode/upgrade-k3s.sh
+```
+
+The helper refuses to start unless Flux and every running workload are healthy. It downloads and verifies each pinned
+k3s binary before making changes, creates an offline SQLite and server-token backup under `/var/backups/k3s`, then
+restarts k3s once per required version step. Workload containers remain running during the brief API-server outages.
+
+Verify the final state:
+
+```bash
+k3s --version
+kubectl get nodes
+kubectl get pods --all-namespaces
+flux check
+```
+
+Do not roll back by replacing only the binary after a minor-version upgrade. Use the matching pre-upgrade database,
+token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
+
+
 ## Grafana admin access
 
 Grafana runs in the `observability` namespace and is exposed via the Tailscale Serve service `svc:grafana`.

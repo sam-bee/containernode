@@ -101,6 +101,7 @@ spec:
       replicas: 0
     bloomGateway:
       replicas: 0
+  postRenderStrategy: nohooks
   postRenderers:
     - kustomize:
         patches:

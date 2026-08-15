@@ -51,6 +51,7 @@ spec:
       analytics:
         check_for_updates: false
         reporting_enabled: false
+  postRenderStrategy: nohooks
   postRenderers:
     - kustomize:
         patches:
