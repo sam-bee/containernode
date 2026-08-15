@@ -85,7 +85,7 @@ spec:
           enabled: true
           proxy_download: true
           connection:
-            secret: gitlab-object-storage
+            secret: gitlab-garage
             key: connection
       registry:
         enabled: false
@@ -100,7 +100,7 @@ spec:
         backups:
           objectStorage:
             config:
-              secret: gitlab-object-storage
+              secret: gitlab-garage
               key: config
       gitaly:
         persistence:
