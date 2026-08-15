@@ -10,11 +10,15 @@ resources:
   - persistentvolumeclaim-redis.yaml
   - persistentvolume-valkey.yaml
   - persistentvolumeclaim-valkey.yaml
+  - garage-storage.yaml
   - gitlab-db.secret.sops.yaml
   - gitlab-hosts.secret.sops.yaml
   - gitlab-initial-root-password.secret.sops.yaml
   - gitlab-valkey.secret.sops.yaml
   - gitlab-object-storage.secret.sops.yaml
+  - gitlab-garage-rpc.secret.sops.yaml
+  - gitlab-garage.secret.sops.yaml
   - valkey.yaml
   - object-storage.yaml
+  - garage.yaml
   - helmrelease.yaml
