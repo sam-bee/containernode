@@ -35,6 +35,12 @@ spec:
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
               cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
+              cp /prompt-grok-number1/SOUL.md /home/node/.openclaw/workspace-grok-number1/SOUL.md
+              cp /prompt-grok-number1/IDENTITY.md /home/node/.openclaw/workspace-grok-number1/IDENTITY.md
+              cp /prompt-grok-number1/USER.md /home/node/.openclaw/workspace-grok-number1/USER.md
+              cp /prompt-grok-number1/TOOLS.md /home/node/.openclaw/workspace-grok-number1/TOOLS.md
+              cp /prompt-grok-number1/HEARTBEAT.md /home/node/.openclaw/workspace-grok-number1/HEARTBEAT.md
+              rm -f /home/node/.openclaw/workspace-grok-number1/BOOTSTRAP.md
           resources:
             requests:
               cpu: 10m

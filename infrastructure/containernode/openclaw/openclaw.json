@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.7.1",
-    "lastTouchedAt": "2026-08-15T06:36:00.000Z"
+    "lastTouchedAt": "2026-08-15T06:45:00.000Z"
   },
   "gateway": {
     "mode": "local",
@@ -35,8 +35,9 @@
         "description": "Experimental Grok-backed security-research assistant",
         "workspace": "~/.openclaw/workspace-grok-number1",
         "model": {
-          "primary": "xai/grok-4.3"
+          "primary": "xai/grok-4.6"
         },
+        "thinkingDefault": "off",
         "tools": {
           "allow": [
             "exec"
