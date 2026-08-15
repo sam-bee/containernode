@@ -17,8 +17,7 @@ metadata:
   name: gitlab-object-storage
   namespace: gitlab
 spec:
-  # Started during the chart handoff after the bundled MinIO pod is stopped.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -42,6 +41,8 @@ spec:
           image: registry.gitlab.com/gitlab-org/cloud-native/mirror/images/minio/minio:RELEASE.2017-12-28T01-21-00Z
           imagePullPolicy: IfNotPresent
           args:
+            - -C
+            - /tmp/.minio
             - --quiet
             - server
             - /export
@@ -81,7 +82,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /export
+            - name: config
+              mountPath: /tmp/.minio
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: gitlab-minio
+        - name: config
+          emptyDir:
+            medium: Memory

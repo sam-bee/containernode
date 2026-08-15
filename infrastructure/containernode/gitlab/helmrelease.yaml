@@ -49,6 +49,8 @@ spec:
       install: false
     postgresql:
       install: false
+    redis:
+      install: false
     gitlab-runner:
       install: false
     traefik:
@@ -71,8 +73,21 @@ spec:
         password:
           secret: gitlab-db
           key: password
+      redis:
+        host: gitlab-valkey.gitlab.svc.cluster.local
+        auth:
+          enabled: true
+          secret: gitlab-valkey
+          key: password
       minio:
-        enabled: true
+        enabled: false
+      appConfig:
+        object_store:
+          enabled: true
+          proxy_download: true
+          connection:
+            secret: gitlab-object-storage
+            key: connection
       registry:
         enabled: false
       kas:
@@ -94,6 +109,12 @@ spec:
         persistence:
           existingClaim: gitlab-redis-data
     gitlab:
+      toolbox:
+        backups:
+          objectStorage:
+            config:
+              secret: gitlab-object-storage
+              key: config
       gitaly:
         persistence:
           storageClass: "-"
