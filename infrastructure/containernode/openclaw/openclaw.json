@@ -1,0 +1,201 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "lan",
+    "port": 18789,
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "controlUi": {
+      "enabled": true
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace",
+      "model": {
+        "primary": "openai/gpt-5.6-sol"
+      }
+    },
+    "list": [
+      {
+        "id": "default",
+        "default": true,
+        "name": "Codex (OpenClaw)",
+        "workspace": "~/.openclaw/workspace"
+      },
+      {
+        "id": "grok-number1",
+        "name": "grok-number1",
+        "description": "Experimental Grok-backed security-research assistant",
+        "workspace": "~/.openclaw/workspace-grok-number1",
+        "model": {
+          "primary": "xai/grok-4.5"
+        },
+        "tools": {
+          "allow": [
+            "exec"
+          ],
+          "elevated": {
+            "enabled": false
+          },
+          "exec": {
+            "host": "node",
+            "node": "research",
+            "security": "allowlist",
+            "ask": "on-miss",
+            "strictInlineEval": true,
+            "timeoutSec": 60
+          }
+        }
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "agentId": "default",
+      "comment": "Route the original Codex Matrix account to the default OpenClaw agent",
+      "match": {
+        "channel": "matrix",
+        "accountId": "codex"
+      }
+    },
+    {
+      "agentId": "grok-number1",
+      "comment": "Route the dedicated grok-number1 Matrix account to its isolated agent",
+      "match": {
+        "channel": "matrix",
+        "accountId": "grok-number1"
+      }
+    }
+  ],
+  "plugins": {
+    "allow": [
+      "codex",
+      "matrix",
+      "xai"
+    ],
+    "entries": {
+      "codex": {
+        "enabled": true
+      },
+      "matrix": {
+        "enabled": true
+      },
+      "xai": {
+        "enabled": true,
+        "config": {
+          "codeExecution": {
+            "enabled": false
+          },
+          "xSearch": {
+            "enabled": false
+          }
+        }
+      }
+    }
+  },
+  "channels": {
+    "matrix": {
+      "enabled": true,
+      "defaultAccount": "codex",
+      "homeserver": "http://synapse.matrix.svc.cluster.local",
+      "network": {
+        "dangerouslyAllowPrivateNetwork": true
+      },
+      "encryption": true,
+      "allowBots": false,
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [
+        "@sierra:matrix"
+      ],
+      "accounts": {
+        "codex": {
+          "name": "Codex (OpenClaw)",
+          "userId": "@codex:matrix",
+          "accessToken": "${MATRIX_ACCESS_TOKEN}",
+          "deviceId": "WRYNNMKMBH",
+          "deviceName": "OpenClaw on containernode",
+          "encryption": true
+        },
+        "grok-number1": {
+          "name": "grok-number1",
+          "userId": "@grok-number1:matrix",
+          "accessToken": "${MATRIX_GROK_NUMBER1_ACCESS_TOKEN}",
+          "deviceId": "IMVNNEEDTG",
+          "deviceName": "OpenClaw grok-number1 on containernode",
+          "encryption": true,
+          "historyLimit": 20
+        }
+      },
+      "groups": {
+        "!vbyFNpnEQVrFnIhHgx:matrix": {
+          "account": "codex",
+          "enabled": true,
+          "requireMention": true,
+          "allowBots": false,
+          "users": [
+            "@sierra:matrix"
+          ],
+          "tools": {
+            "allow": []
+          },
+          "systemPrompt": "This is the private outside-agents experiment. Reply only to @sierra:matrix when explicitly mentioned. Be clear that you are the OpenClaw-hosted assistant, not the active Codex desktop task. Do not invite users or bots, message other rooms, or take external actions without explicit approval."
+        },
+        "!AFevwmXOiPKDVYXVZR:matrix": {
+          "account": "grok-number1",
+          "enabled": true,
+          "requireMention": true,
+          "allowBots": "mentions",
+          "botLoopProtection": {
+            "enabled": true,
+            "maxEventsPerWindow": 4,
+            "windowSeconds": 300,
+            "cooldownSeconds": 300
+          },
+          "users": [
+            "@sierra:matrix"
+          ],
+          "tools": {
+            "allow": [
+              "exec"
+            ]
+          },
+          "systemPrompt": "This is the private security-research experiment. Reply only when @sierra:matrix explicitly mentions you. You are grok-number1, an OpenClaw-hosted Grok assistant, not Grok Build and not the Codex desktop task. Use the paired research node only through approved tools; never bypass command policy. Do not invite users or bots, message other rooms, or take external actions without explicit approval."
+        }
+      },
+      "dm": {
+        "enabled": false,
+        "policy": "disabled",
+        "sessionScope": "per-room"
+      },
+      "execApprovals": {
+        "enabled": true,
+        "approvers": [
+          "@sierra:matrix"
+        ],
+        "agentFilter": [
+          "grok-number1"
+        ],
+        "target": "channel"
+      },
+      "autoJoin": "allowlist",
+      "autoJoinAllowlist": [
+        "!vbyFNpnEQVrFnIhHgx:matrix",
+        "!AFevwmXOiPKDVYXVZR:matrix"
+      ],
+      "threadReplies": "inbound",
+      "replyToMode": "off",
+      "streaming": "off"
+    }
+  },
+  "cron": {
+    "enabled": false
+  },
+  "discovery": {
+    "mdns": {
+      "mode": "off"
+    }
+  }
+}

@@ -6,6 +6,16 @@ resources:
   - persistentvolumeclaim.yaml
   - openclaw-secrets.secret.sops.yaml
   - openclaw-matrix-secrets.secret.sops.yaml
-  - configmap.yaml
   - deployment.yaml
   - service.yaml
+
+configMapGenerator:
+  - name: openclaw-config
+    namespace: openclaw
+    files:
+      - openclaw.json
+      - AGENTS.md=prompts/codex/AGENTS.md
+  - name: openclaw-grok-number1-prompt
+    namespace: openclaw
+    files:
+      - AGENTS.md=prompts/grok-number1/AGENTS.md

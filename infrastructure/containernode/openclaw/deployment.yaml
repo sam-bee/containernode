@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        openclaw.sambee.co/config-revision: "2026-08-15-matrix-v3"
+        openclaw.sambee.co/config-revision: "2026-08-15-grok-number1-v1"
       labels:
         app: openclaw
     spec:
@@ -31,9 +31,10 @@ spec:
             - |
               set -eu
 
-              mkdir -p /home/node/.openclaw/workspace
+              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
+              cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
           resources:
             requests:
               cpu: 10m
@@ -57,6 +58,9 @@ spec:
               mountPath: /home/node/.openclaw
             - name: config
               mountPath: /config
+              readOnly: true
+            - name: prompt-grok-number1
+              mountPath: /prompt-grok-number1
               readOnly: true
         - name: install-matrix-plugin
           image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
@@ -90,6 +94,11 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_ACCESS_TOKEN
+            - name: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
           resources:
             requests:
               cpu: 50m
@@ -148,6 +157,11 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_ACCESS_TOKEN
+            - name: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
           ports:
             - name: gateway
               containerPort: 18789
@@ -202,5 +216,8 @@ spec:
         - name: config
           configMap:
             name: openclaw-config
+        - name: prompt-grok-number1
+          configMap:
+            name: openclaw-grok-number1-prompt
         - name: tmp
           emptyDir: {}
