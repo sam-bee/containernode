@@ -49,8 +49,6 @@ spec:
       install: false
     postgresql:
       install: false
-    redis:
-      install: false
     gitlab-runner:
       install: false
     traefik:
@@ -105,6 +103,7 @@ spec:
         size: 20Gi
         volumeName: gitlab-minio-data
     redis:
+      install: false
       master:
         persistence:
           existingClaim: gitlab-redis-data
