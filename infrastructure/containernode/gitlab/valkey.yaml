@@ -72,7 +72,7 @@ spec:
                 secretKeyRef:
                   name: gitlab-valkey
                   key: password
-            - name: VALKEYCLI_AUTH
+            - name: REDISCLI_AUTH
               valueFrom:
                 secretKeyRef:
                   name: gitlab-valkey
