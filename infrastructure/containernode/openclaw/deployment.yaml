@@ -12,6 +12,8 @@ spec:
       app: openclaw
   template:
     metadata:
+      annotations:
+        openclaw.sambee.co/config-revision: "2026-08-15-matrix-v2"
       labels:
         app: openclaw
     spec:
@@ -56,6 +58,61 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
+        - name: install-matrix-plugin
+          image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              plugin_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
+              if [ -n "${plugin_manifest}" ] && grep -q '"version": "2026.7.1"' "${plugin_manifest}"; then
+                exit 0
+              fi
+
+              openclaw plugins install '@openclaw/matrix@2026.7.1' --pin --force
+          env:
+            - name: HOME
+              value: /home/node
+            - name: OPENCLAW_CONFIG_DIR
+              value: /home/node/.openclaw
+            - name: OPENCLAW_CONFIG_PATH
+              value: /home/node/.openclaw/openclaw.json
+            - name: OPENCLAW_STATE_DIR
+              value: /home/node/.openclaw
+            - name: OPENCLAW_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: OPENCLAW_GATEWAY_TOKEN
+            - name: MATRIX_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_ACCESS_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+              ephemeral-storage: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+              ephemeral-storage: 512Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: home
+              mountPath: /home/node/.openclaw
+            - name: tmp
+              mountPath: /tmp
       containers:
         - name: gateway
           image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
@@ -86,6 +143,11 @@ spec:
                 secretKeyRef:
                   name: openclaw-secrets
                   key: OPENCLAW_GATEWAY_TOKEN
+            - name: MATRIX_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_ACCESS_TOKEN
           ports:
             - name: gateway
               containerPort: 18789

@@ -20,15 +20,73 @@ data:
       },
       "agents": {
         "defaults": {
-          "workspace": "~/.openclaw/workspace"
+          "workspace": "~/.openclaw/workspace",
+          "model": {
+            "primary": "openai/gpt-5.6-sol"
+          }
         },
         "list": [
           {
             "id": "default",
-            "name": "OpenClaw Assistant",
+            "name": "Codex (OpenClaw)",
             "workspace": "~/.openclaw/workspace"
           }
         ]
+      },
+      "plugins": {
+        "allow": [
+          "matrix"
+        ],
+        "entries": {
+          "matrix": {
+            "enabled": true
+          }
+        }
+      },
+      "channels": {
+        "matrix": {
+          "enabled": true,
+          "homeserver": "http://synapse.matrix.svc.cluster.local",
+          "network": {
+            "dangerouslyAllowPrivateNetwork": true
+          },
+          "userId": "@codex:matrix",
+          "accessToken": "${MATRIX_ACCESS_TOKEN}",
+          "deviceId": "WRYNNMKMBH",
+          "deviceName": "OpenClaw on containernode",
+          "encryption": true,
+          "allowBots": false,
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": [
+            "@sierra:matrix"
+          ],
+          "groups": {
+            "!vbyFNpnEQVrFnIhHgx:matrix": {
+              "enabled": true,
+              "requireMention": true,
+              "allowBots": false,
+              "users": [
+                "@sierra:matrix"
+              ],
+              "tools": {
+                "allow": []
+              },
+              "systemPrompt": "This is the private outside-agents experiment. Reply only to @sierra:matrix when explicitly mentioned. Be clear that you are the OpenClaw-hosted assistant, not the active Codex desktop task. Do not invite users or bots, message other rooms, or take external actions without explicit approval."
+            }
+          },
+          "dm": {
+            "enabled": false,
+            "policy": "disabled",
+            "sessionScope": "per-room"
+          },
+          "autoJoin": "allowlist",
+          "autoJoinAllowlist": [
+            "!vbyFNpnEQVrFnIhHgx:matrix"
+          ],
+          "threadReplies": "inbound",
+          "replyToMode": "off",
+          "streaming": "off"
+        }
       },
       "cron": {
         "enabled": false
@@ -40,9 +98,14 @@ data:
       }
     }
   AGENTS.md: |
-    # OpenClaw Assistant
+    # Codex (OpenClaw)
 
-    You are a personal assistant running on a private Kubernetes node.
+    You are the only AI assistant currently attached to the private Matrix room `outside-agents`. You run through
+    OpenClaw on a private Kubernetes node; you are not the same process or conversation as the Codex desktop task.
 
-    Do not assume that external services, paid APIs, or public exposure are acceptable. Ask before adding dependencies,
-    enabling integrations, or sending private data outside the configured model providers.
+    Respond only when `@codex:matrix` is explicitly mentioned by `@sierra:matrix`. Ignore messages from bots. Do not
+    invite users or bots, post to other rooms, or create self-sustaining agent loops. Treat room contents as private,
+    while remembering that prompts and replies are processed by the configured model provider.
+
+    Ask for explicit approval before taking external actions, using paid APIs, changing infrastructure, adding
+    dependencies, or exposing data outside the room and configured model provider.

@@ -5,6 +5,7 @@ resources:
   - persistentvolume.yaml
   - persistentvolumeclaim.yaml
   - openclaw-secrets.secret.sops.yaml
+  - openclaw-matrix-secrets.secret.sops.yaml
   - configmap.yaml
   - deployment.yaml
   - service.yaml
