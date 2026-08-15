@@ -5,6 +5,12 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
+    # K3s v1.36.3+k3s1 bundles vulnerable Traefik 3.7.8. Remove this
+    # override once K3s ships 3.7.10 or later.
+    image:
+      registry: docker.io
+      repository: traefik
+      tag: 3.7.10
     service:
       spec:
         externalTrafficPolicy: Local

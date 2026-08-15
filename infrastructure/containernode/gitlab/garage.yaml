@@ -221,7 +221,7 @@ spec:
               mountPath: /config
       containers:
         - name: garage
-          image: dxflrs/amd64_garage:v2.2.0
+          image: dxflrs/amd64_garage:v2.3.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: s3-api

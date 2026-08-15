@@ -101,6 +101,34 @@ Do not roll back by replacing only the binary after a minor-version upgrade. Use
 token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
 
 
+## Maintain the Flux-owned local-path provisioner
+
+The bundled K3s `local-storage` AddOn is intentionally skipped so Flux can manage a newer local-path provisioner from
+`infrastructure/containernode/local-path-provisioner`. K3s rewrites packaged manifests at startup, so the skip file must
+be present on `containernode` before restarting or upgrading K3s.
+
+On `containernode`, create the host-local skip marker once. Its contents do not matter:
+
+```bash
+sudo install -D -m 0644 /dev/null \
+  /var/lib/rancher/k3s/server/manifests/local-storage.yaml.skip
+```
+
+The matching repository file at `host/containernode/manifests/local-storage.yaml.skip` records this manually applied
+host state for reproducibility.
+
+The skip file does not delete or modify the existing resources. Flux adopts the same ServiceAccount, RBAC, Deployment,
+StorageClass, and ConfigMap names and preserves the K3s storage root at `/var/lib/rancher/k3s/storage`.
+
+Verify the Flux-managed rollout with:
+
+```bash
+kubectl rollout status deployment/local-path-provisioner -n kube-system
+kubectl get deployment/local-path-provisioner -n kube-system \
+  -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+
+
 ## Grafana admin access
 
 Grafana runs in the `observability` namespace and is exposed via the Tailscale Serve service `svc:grafana`.
@@ -112,17 +140,37 @@ kubectl get secret grafana -n observability -o jsonpath='{.data.admin-password}'
 ```
 
 
+## PostgreSQL 17 and 18 service split
+
+Two PostgreSQL Deployments intentionally run side by side while application support catches up:
+
+- `postgres.postgres.svc.cluster.local` runs PostgreSQL 17 and currently contains only GitLab's
+  `gitlabhq_production` database. GitLab 19.x with Helm chart 10.x supports PostgreSQL 17.x, but not PostgreSQL 18.
+  Keep this instance, its `postgres-data` PVC/PV, and its service until GitLab officially supports PostgreSQL 18 and
+  its database has been migrated and verified. See the
+  [GitLab PostgreSQL requirements](https://docs.gitlab.com/install/requirements/#postgresql).
+- `postgres18.postgres.svc.cluster.local` runs PostgreSQL 18 and contains the Chat, Grafana, and Matrix Synapse
+  databases. New supported consumers should use this service.
+
+The two instances have separate data directories and retained PVs. PostgreSQL major versions cannot share a data
+directory, so retiring PostgreSQL 17 requires an explicit GitLab database migration followed by application and
+backup verification; changing the image or service selector is not sufficient.
+
+The host-local port `127.0.0.1:5432` and Tailscale Serve service `svc:postgres` currently reach PostgreSQL 17. The
+PostgreSQL 18 service is cluster-internal only.
+
+
 ## Maintain Grafana Postgres settings
 
 Grafana already reads its database settings from the Secret
-`infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml`.
+`infrastructure/containernode/observability/grafana-postgres-auth.secret.sops.yaml` and connects to PostgreSQL 18.
 
-If the Secret needs to be recreated, first create or rotate the Grafana database role from the existing Postgres pod:
+If the Secret needs to be recreated, first create or rotate the Grafana database role in the PostgreSQL 18 pod:
 
 ```bash
 export GRAFANA_DB_PASSWORD="$(openssl rand -hex 24)"
 
-kubectl exec -i -n postgres deploy/postgres -- \
+kubectl exec -i -n postgres deploy/postgres18 -- \
   env GRAFANA_DB_PASSWORD="$GRAFANA_DB_PASSWORD" \
   sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
     -v grafana_password="$GRAFANA_DB_PASSWORD"' <<'SQL'
@@ -149,7 +197,7 @@ Then overwrite the encrypted Secret manifest:
 kubectl create secret generic grafana-postgres-auth \
   --namespace observability \
   --from-literal=GF_DATABASE_TYPE=postgres \
-  --from-literal=GF_DATABASE_HOST=postgres.postgres.svc.cluster.local:5432 \
+  --from-literal=GF_DATABASE_HOST=postgres18.postgres.svc.cluster.local:5432 \
   --from-literal=GF_DATABASE_NAME=grafana \
   --from-literal=GF_DATABASE_USER=grafana \
   --from-literal=GF_DATABASE_PASSWORD="$GRAFANA_DB_PASSWORD" \
@@ -328,7 +376,7 @@ kubectl create secret generic openclaw-secrets \
   | docker run --rm -i \
       -v "$PWD:/work" \
       -w /work \
-      ghcr.io/getsops/sops:v3.13.2 \
+      ghcr.io/getsops/sops:v3.13.3 \
       --encrypt \
       --filename-override infrastructure/containernode/openclaw/openclaw-secrets.secret.sops.yaml \
       --input-type yaml --output-type yaml /dev/stdin \
