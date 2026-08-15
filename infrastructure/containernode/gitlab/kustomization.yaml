@@ -4,8 +4,6 @@ resources:
   - namespace.yaml
   - helmrepository.yaml
   - persistentvolume-gitaly.yaml
-  - persistentvolume-minio.yaml
-  - persistentvolumeclaim-minio.yaml
   - persistentvolume-redis.yaml
   - persistentvolumeclaim-redis.yaml
   - persistentvolume-valkey.yaml
@@ -15,10 +13,8 @@ resources:
   - gitlab-hosts.secret.sops.yaml
   - gitlab-initial-root-password.secret.sops.yaml
   - gitlab-valkey.secret.sops.yaml
-  - gitlab-object-storage.secret.sops.yaml
   - gitlab-garage-rpc.secret.sops.yaml
   - gitlab-garage.secret.sops.yaml
   - valkey.yaml
-  - object-storage.yaml
   - garage.yaml
   - helmrelease.yaml
