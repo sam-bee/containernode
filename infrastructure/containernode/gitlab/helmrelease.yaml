@@ -85,6 +85,7 @@ spec:
       ingress:
         enabled: false
       persistence:
+        keep: true
         storageClass: "-"
         size: 20Gi
         volumeName: gitlab-minio-data
