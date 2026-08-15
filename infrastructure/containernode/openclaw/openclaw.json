@@ -31,7 +31,7 @@
         "description": "Experimental Grok-backed security-research assistant",
         "workspace": "~/.openclaw/workspace-grok-number1",
         "model": {
-          "primary": "xai/grok-4.5"
+          "primary": "xai/grok-4.3"
         },
         "tools": {
           "allow": [
