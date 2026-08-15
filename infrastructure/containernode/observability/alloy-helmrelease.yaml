@@ -170,6 +170,9 @@ spec:
               url = "http://loki:3100/loki/api/v1/push"
             }
           }
+    configReloader:
+      image:
+        tag: v0.93.1@sha256:428f088fe6fe07ab138bda92113664b04848a1dc408e4d3680a60ecdb55d1a65
     controller:
       type: daemonset
       tolerations:
