@@ -185,6 +185,7 @@ spec:
                 - CHOWN
               drop:
                 - ALL
+            runAsNonRoot: false
             runAsUser: 0
           volumeMounts:
             - name: meta
