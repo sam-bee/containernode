@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "lastTouchedVersion": "2026.7.1",
+    "lastTouchedAt": "2026-08-15T06:36:00.000Z"
+  },
   "gateway": {
     "mode": "local",
     "bind": "lan",
