@@ -35,9 +35,13 @@ data:
       },
       "plugins": {
         "allow": [
+          "codex",
           "matrix"
         ],
         "entries": {
+          "codex": {
+            "enabled": true
+          },
           "matrix": {
             "enabled": true
           }

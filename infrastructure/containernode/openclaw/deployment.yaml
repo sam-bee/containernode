@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        openclaw.sambee.co/config-revision: "2026-08-15-matrix-v2"
+        openclaw.sambee.co/config-revision: "2026-08-15-matrix-v3"
       labels:
         app: openclaw
     spec:
