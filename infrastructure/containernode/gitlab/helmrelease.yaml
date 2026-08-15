@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: gitlab
-      version: 9.11.10
+      version: 10.2.2
       sourceRef:
         kind: HelmRepository
         name: gitlab
@@ -47,14 +47,17 @@ spec:
       enabled: false
     prometheus:
       install: false
-    postgresql:
-      install: false
     gitlab-runner:
       install: false
     traefik:
       install: false
     global:
+      gatewayApi:
+        enabled: false
+        installEnvoy: false
+        configureCertmanager: false
       ingress:
+        enabled: true
         class: traefik
         provider: traefik
         configureCertmanager: false
@@ -77,8 +80,6 @@ spec:
           enabled: true
           secret: gitlab-valkey
           key: password
-      minio:
-        enabled: false
       appConfig:
         object_store:
           enabled: true
@@ -94,19 +95,6 @@ spec:
       enabled: false
       ingress:
         enabled: false
-    minio:
-      ingress:
-        enabled: false
-      persistence:
-        keep: true
-        storageClass: "-"
-        size: 20Gi
-        volumeName: gitlab-minio-data
-    redis:
-      install: false
-      master:
-        persistence:
-          existingClaim: gitlab-redis-data
     gitlab:
       toolbox:
         backups:
