@@ -40,7 +40,7 @@ spec:
               mountPath: /tls
       containers:
         - name: postgres
-          image: postgres:17.9
+          image: postgres:17.11
           args:
             - -c
             - ssl=on
