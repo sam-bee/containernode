@@ -33,10 +33,7 @@ spec:
                   name: chat-db
                   key: database-type
             - name: DATABASE_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: chat-db
-                  key: host
+              value: postgres18.postgres.svc.cluster.local
             - name: DATABASE_PORT
               valueFrom:
                 secretKeyRef:

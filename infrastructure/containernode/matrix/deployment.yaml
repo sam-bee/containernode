@@ -123,10 +123,7 @@ spec:
             - name: TZ
               value: Europe/London
             - name: POSTGRES_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: synapse-db
-                  key: POSTGRES_HOST
+              value: postgres18.postgres.svc.cluster.local
             - name: POSTGRES_PORT
               valueFrom:
                 secretKeyRef:

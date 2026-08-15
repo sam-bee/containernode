@@ -34,6 +34,8 @@ spec:
       enabled: true
       existingClaim: grafana-data
     envFromSecret: grafana-postgres-auth
+    env:
+      GF_DATABASE_HOST: postgres18.postgres.svc.cluster.local:5432
     datasources:
       datasources.yaml:
         apiVersion: 1
