@@ -114,7 +114,7 @@
         "codex": {
           "name": "Codex (OpenClaw)",
           "userId": "@codex:matrix",
-          "accessToken": "${MATRIX_ACCESS_TOKEN}",
+          "accessToken": "${OPENCLAW_MATRIX_CODEX_ACCESS_TOKEN}",
           "deviceId": "WRYNNMKMBH",
           "deviceName": "OpenClaw on containernode",
           "encryption": true
