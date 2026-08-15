@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: loki
-      version: 13.5.0
+      version: 18.9.0
       sourceRef:
         kind: HelmRepository
         name: grafana-community
@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     fullnameOverride: loki
-    deploymentMode: SingleBinary
+    deploymentMode: Monolithic
     gateway:
       enabled: false
     lokiCanary:
