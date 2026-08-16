@@ -62,8 +62,9 @@ These controls are host-local rather than Kubernetes configuration:
 - `~/.config/systemd/user/openclaw-node.service.d/20-security-research-sandbox.conf` defines the write boundary.
 - `~/.config/systemd/user/openclaw-node.service.d/30-research-tool-storage.conf` routes npm, XDG, and Playwright state
   into OpenClaw's existing writable directory rather than making the whole home directory writable.
-- `~/.local/bin/playwright-cli` exposes the project-local CLI through the paired node's sanitized command path. The
-  research project's `.playwright/cli.config.json` selects `/usr/bin/chromium`, avoiding a separate browser download.
+- `~/.openclaw/npm-global` holds the pinned Playwright CLI. Its node-wide config selects `/usr/bin/chromium` and sends
+  generated output to `~/.openclaw/playwright-output`, keeping npm and Playwright setup files out of research repos.
+- `~/.local/bin/playwright-cli` exposes that node-wide CLI through the paired node's sanitized command path.
 - `~/.config/systemd/user/openclaw-ssh-agent.service` owns the dedicated credential-agent socket.
 - `~/.openclaw/openclaw.json` explicitly requests `tools.exec.security=full` and `tools.exec.ask=off` for the node
   runtime. Keep these values explicit: OpenClaw 2026.7.1 otherwise enforces its `allowlist`/`on-miss` node-host
