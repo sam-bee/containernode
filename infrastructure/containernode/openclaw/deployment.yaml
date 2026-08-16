@@ -218,7 +218,7 @@ spec:
             - name: home
               mountPath: /home/node/.openclaw
             - name: research-playwright-media
-              mountPath: /home/node/.openclaw/workspace-grok-number1/media/research-playwright
+              mountPath: /home/node/.openclaw/workspace-grok-number1/research-playwright-media
               readOnly: true
             - name: tmp
               mountPath: /tmp
