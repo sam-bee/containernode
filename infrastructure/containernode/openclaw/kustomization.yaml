@@ -14,13 +14,13 @@ configMapGenerator:
     namespace: openclaw
     files:
       - openclaw.json
-      - AGENTS.md=prompts/codex/AGENTS.md
+      - AGENTS.md=agent-content/codex/AGENTS.md
   - name: openclaw-grok-number1-prompt
     namespace: openclaw
     files:
-      - AGENTS.md=prompts/grok-number1/AGENTS.md
-      - SOUL.md=prompts/grok-number1/SOUL.md
-      - IDENTITY.md=prompts/grok-number1/IDENTITY.md
-      - USER.md=prompts/grok-number1/USER.md
-      - TOOLS.md=prompts/grok-number1/TOOLS.md
-      - HEARTBEAT.md=prompts/grok-number1/HEARTBEAT.md
+      - AGENTS.md=agent-content/grok-number1/AGENTS.md
+      - SOUL.md=agent-content/grok-number1/SOUL.md
+      - IDENTITY.md=agent-content/grok-number1/IDENTITY.md
+      - USER.md=agent-content/grok-number1/USER.md
+      - TOOLS.md=agent-content/grok-number1/TOOLS.md
+      - HEARTBEAT.md=agent-content/grok-number1/HEARTBEAT.md

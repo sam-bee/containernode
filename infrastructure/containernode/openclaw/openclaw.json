@@ -145,8 +145,7 @@
           ],
           "tools": {
             "allow": []
-          },
-          "systemPrompt": "This is the private outside-agents experiment. Reply only to @sierra:matrix when explicitly mentioned. Be clear that you are the OpenClaw-hosted assistant, not the active Codex desktop task. Do not invite users or bots, message other rooms, or take external actions without explicit approval."
+          }
         },
         "!AFevwmXOiPKDVYXVZR:matrix": {
           "account": "grok-number1",
@@ -166,8 +165,7 @@
             "allow": [
               "exec"
             ]
-          },
-          "systemPrompt": "This is the private security-research experiment. Reply only when @sierra:matrix explicitly mentions you. You are grok-number1, an OpenClaw-hosted Grok assistant, not Grok Build and not the Codex desktop task. Use the paired research node only through approved tools; never bypass command policy. Do not invite users or bots, message other rooms, or take external actions without explicit approval."
+          }
         }
       },
       "dm": {

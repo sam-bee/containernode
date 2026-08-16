@@ -358,6 +358,17 @@ OpenClaw keeps its config, workspace, session data, credentials, and SQLite stat
 directory is backed by the retained hostPath volume at `/mnt/userdata-clusterfiles/k3s-volumes/openclaw`. It does not
 use the cluster Postgres service.
 
+### Edit agent instructions
+
+Model-facing instructions are maintained in the private `sam-bee/agents` repository, not in this infrastructure
+repository. Edit files below `agents/<agent-id>/` on its `master` branch and push the same commit to its GitHub and
+GitLab remotes. Flux reads the GitHub copy through the `openclaw-agents` source, includes those files in the dedicated
+OpenClaw artifact, and rolls out the gateway when the generated ConfigMap hash changes.
+
+The encrypted read-only Git credential is
+`infrastructure/containernode/openclaw-agents-git-auth.secret.sops.yaml`. Its public key must be registered as a
+read-only deploy key on the GitHub agents repository. Do not give this key write access.
+
 ### Create or rotate the gateway token
 
 Generate a new token with `openssl rand -hex 32`, store it in the password manager, then paste it into the silent prompt

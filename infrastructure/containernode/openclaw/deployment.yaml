@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        openclaw.sambee.co/config-revision: "2026-08-15-grok-number1-v1"
+        openclaw.sambee.co/config-revision: "2026-08-16-external-agent-content-v1"
       labels:
         app: openclaw
     spec:

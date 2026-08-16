@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - openclaw-agents-git-auth.secret.sops.yaml
   - openclaw-sources.yaml
+  - openclaw-reconciliation.yaml
   - namespaces.yaml
   - cert-manager
   - chat
@@ -16,4 +17,3 @@ resources:
   - gitlab
   - syncthing
   - matrix
-  - openclaw
