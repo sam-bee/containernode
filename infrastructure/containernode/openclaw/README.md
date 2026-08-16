@@ -83,9 +83,10 @@ Packagist `.playwright-mcp` directory to the same host path on `containernode`; 
 read-only at `workspace-grok-number1/research-playwright-media`. This lets OpenClaw resolve node-generated screenshots
 as workspace media without exposing the rest of the synced research tree to the gateway.
 
-The same read-only volume is also mounted at the research node's absolute `.playwright-mcp` path. This compatibility
-mount makes old sessions and imperfect model replies deterministic: a `MEDIA:` directive that uses the research-side
-absolute path still resolves, instead of relying exclusively on the agent to rewrite it to the preferred workspace path.
+An init container also creates the research node's absolute `.playwright-mcp` path as a symlink to that workspace mount.
+This compatibility mapping makes old sessions and imperfect model replies deterministic: a `MEDIA:` directive that uses
+the research-side absolute path canonicalizes to the already-approved workspace path. It does not grant the agent the
+general `read` tool or add the research checkout to OpenClaw's local-media allowlist.
 
 The two sides of the bridge are:
 

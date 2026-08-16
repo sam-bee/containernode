@@ -42,6 +42,7 @@ spec:
               cp /prompt-grok-number1/HEARTBEAT.md /home/node/.openclaw/workspace-grok-number1/HEARTBEAT.md
               cp -R /skill-grok-number1-playwright-cli/. /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli/
               rm -f /home/node/.openclaw/workspace-grok-number1/BOOTSTRAP.md
+              ln -s /home/node/.openclaw/workspace-grok-number1/research-playwright-media /research-media-path-compat/.playwright-mcp
           resources:
             requests:
               cpu: 10m
@@ -72,6 +73,8 @@ spec:
             - name: skill-grok-number1-playwright-cli
               mountPath: /skill-grok-number1-playwright-cli
               readOnly: true
+            - name: research-media-path-compat
+              mountPath: /research-media-path-compat
         - name: install-matrix-plugin
           image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
           command:
@@ -220,8 +223,8 @@ spec:
             - name: research-playwright-media
               mountPath: /home/node/.openclaw/workspace-grok-number1/research-playwright-media
               readOnly: true
-            - name: research-playwright-media
-              mountPath: /mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp
+            - name: research-media-path-compat
+              mountPath: /mnt/workfiles/synced/tech-projects/security-research/01-packagist
               readOnly: true
             - name: tmp
               mountPath: /tmp
@@ -263,5 +266,7 @@ spec:
           hostPath:
             path: /mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp
             type: Directory
+        - name: research-media-path-compat
+          emptyDir: {}
         - name: tmp
           emptyDir: {}
