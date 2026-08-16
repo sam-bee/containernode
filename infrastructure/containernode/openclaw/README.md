@@ -26,6 +26,10 @@ Edit agent content on the `master` branch of the agents repository. An agents co
 hash, which rolls out OpenClaw; the init container then copies each prompt into its isolated workspace. GitHub is the
 Flux deployment source and GitLab is maintained as a mirror.
 
+Agent skills live at `agents/<agent-id>/skills/<skill-name>/SKILL.md`. The deployment copies packaged skills into the
+matching OpenClaw workspace under `skills/`, where OpenClaw discovers them automatically; agent prompts do not need to
+name the skill path.
+
 The `grok-number1` model credential is created interactively with xAI OAuth and retained in the OpenClaw home PVC;
 it is not stored in Git. Matrix and gateway tokens are SOPS-encrypted in this directory.
 
@@ -56,9 +60,17 @@ changing the service sandbox.
 These controls are host-local rather than Kubernetes configuration:
 
 - `~/.config/systemd/user/openclaw-node.service.d/20-security-research-sandbox.conf` defines the write boundary.
+- `~/.config/systemd/user/openclaw-node.service.d/30-research-tool-storage.conf` routes npm, XDG, and Playwright state
+  into OpenClaw's existing writable directory rather than making the whole home directory writable.
+- `~/.local/bin/playwright-cli` exposes the project-local CLI through the paired node's sanitized command path. The
+  research project's `.playwright/cli.config.json` selects `/usr/bin/chromium`, avoiding a separate browser download.
 - `~/.config/systemd/user/openclaw-ssh-agent.service` owns the dedicated credential-agent socket.
+- `~/.openclaw/openclaw.json` explicitly requests `tools.exec.security=full` and `tools.exec.ask=off` for the node
+  runtime. Keep these values explicit: OpenClaw 2026.7.1 otherwise enforces its `allowlist`/`on-miss` node-host
+  fallbacks even when the gateway and per-agent host approval both request unrestricted execution.
 - `~/.openclaw/exec-approvals.json` supplies the host-side OpenClaw execution policy.
 
-The gateway and host approval file must both grant and route `exec` explicitly for each research agent. The host default
-is deny, and the non-research `default` agent remains without `exec` access. Add each future research agent to both
-layers rather than relaxing the host default.
+The gateway must route `exec`, the node-local requested policy must permit it, and the host approval file must grant it
+explicitly for each research agent. The host default is deny, so setting the node-local requested policy to `full` does
+not authorize the non-research `default` agent. Add each future research agent to the gateway and host approval layers
+rather than relaxing the host default.

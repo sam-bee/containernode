@@ -31,7 +31,7 @@ spec:
             - |
               set -eu
 
-              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1
+              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
               cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
@@ -40,6 +40,7 @@ spec:
               cp /prompt-grok-number1/USER.md /home/node/.openclaw/workspace-grok-number1/USER.md
               cp /prompt-grok-number1/TOOLS.md /home/node/.openclaw/workspace-grok-number1/TOOLS.md
               cp /prompt-grok-number1/HEARTBEAT.md /home/node/.openclaw/workspace-grok-number1/HEARTBEAT.md
+              cp -R /skill-grok-number1-playwright-cli/. /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli/
               rm -f /home/node/.openclaw/workspace-grok-number1/BOOTSTRAP.md
           resources:
             requests:
@@ -67,6 +68,9 @@ spec:
               readOnly: true
             - name: prompt-grok-number1
               mountPath: /prompt-grok-number1
+              readOnly: true
+            - name: skill-grok-number1-playwright-cli
+              mountPath: /skill-grok-number1-playwright-cli
               readOnly: true
         - name: install-matrix-plugin
           image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
@@ -225,5 +229,29 @@ spec:
         - name: prompt-grok-number1
           configMap:
             name: openclaw-grok-number1-prompt
+        - name: skill-grok-number1-playwright-cli
+          configMap:
+            name: openclaw-grok-number1-playwright-cli-skill
+            items:
+              - key: SKILL.md
+                path: SKILL.md
+              - key: element-attributes.md
+                path: references/element-attributes.md
+              - key: playwright-tests.md
+                path: references/playwright-tests.md
+              - key: request-mocking.md
+                path: references/request-mocking.md
+              - key: running-code.md
+                path: references/running-code.md
+              - key: session-management.md
+                path: references/session-management.md
+              - key: storage-state.md
+                path: references/storage-state.md
+              - key: test-generation.md
+                path: references/test-generation.md
+              - key: tracing.md
+                path: references/tracing.md
+              - key: video-recording.md
+                path: references/video-recording.md
         - name: tmp
           emptyDir: {}
