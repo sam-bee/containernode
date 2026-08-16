@@ -5,8 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  # Temporarily disabled while OpenClaw ownership moves to its own Kustomization.
-  prune: false
+  prune: true
   wait: true
   decryption:
     provider: sops
