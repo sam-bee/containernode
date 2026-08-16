@@ -38,6 +38,21 @@ systemctl --user status openclaw-node.service
 journalctl --user -u openclaw-node.service
 ```
 
-Command authorization is deliberately enforced twice: the agent has an OpenClaw `exec` allowlist policy, and the
-paired node has a host-side approval file. Initially only `/usr/bin/uname` is pre-approved for `grok-number1`.
-Expand that list narrowly as research tasks are introduced; do not allowlist a general shell or interpreter.
+Research agents are allowed arbitrary commands on this node so they can edit code and use Git, but the node service
+runs inside a host-enforced systemd write boundary. It can modify OpenClaw's own state and
+`/mnt/workfiles/synced/tech-projects/security-research/01-packagist`; the rest of the host filesystem is read-only.
+Raw SSH keys, the Docker control socket, and the desktop/user systemd session are inaccessible from the service.
+
+Git authentication is provided through a dedicated SSH-agent socket. The node can ask that agent to sign Git SSH
+connections but cannot read the underlying private-key file. Both GitHub and GitLab access should be tested after
+changing the service sandbox.
+
+These controls are host-local rather than Kubernetes configuration:
+
+- `~/.config/systemd/user/openclaw-node.service.d/20-security-research-sandbox.conf` defines the write boundary.
+- `~/.config/systemd/user/openclaw-ssh-agent.service` owns the dedicated credential-agent socket.
+- `~/.openclaw/exec-approvals.json` supplies the host-side OpenClaw execution policy.
+
+The gateway and host approval file must both grant and route `exec` explicitly for each research agent. The host default
+is deny, and the non-research `default` agent remains without `exec` access. Add each future research agent to both
+layers rather than relaxing the host default.

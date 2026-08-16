@@ -48,9 +48,9 @@
           "exec": {
             "host": "node",
             "node": "research",
-            "security": "allowlist",
-            "ask": "on-miss",
-            "strictInlineEval": true,
+            "security": "full",
+            "ask": "off",
+            "strictInlineEval": false,
             "timeoutSec": 60
           }
         }
