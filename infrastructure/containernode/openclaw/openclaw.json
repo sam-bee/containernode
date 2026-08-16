@@ -40,7 +40,8 @@
         "thinkingDefault": "off",
         "tools": {
           "allow": [
-            "exec"
+            "exec",
+            "web_search"
           ],
           "elevated": {
             "enabled": false
@@ -98,6 +99,13 @@
             "enabled": false
           }
         }
+      }
+    }
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "provider": "grok"
       }
     }
   },
@@ -163,7 +171,8 @@
           ],
           "tools": {
             "allow": [
-              "exec"
+              "exec",
+              "web_search"
             ]
           }
         }

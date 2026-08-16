@@ -90,3 +90,13 @@ The two sides of the bridge are:
 
 Keep the source directory mounted with `hostPath.type: Directory`. A missing Syncthing directory should prevent the
 gateway rollout instead of silently creating an empty path that turns attachments into `Media failed` warnings.
+
+## Grok web search
+
+`grok-number1` has the OpenClaw `web_search` tool, backed by the `grok` provider. The xAI plugin reuses the agent's
+existing xAI OAuth profile, so no separate Brave or xAI API key is stored in Kubernetes. Both the per-agent and Matrix
+room tool allowlists must include `web_search`; the non-research Codex account remains unable to use it.
+
+This enables cited, read-only public-web research. It does not enable `web_fetch`, browser automation on public sites,
+xAI code execution, or `x_search`; the latter remains explicitly disabled. Research agents may use search to locate
+public documentation and background material, but the rules against testing or probing live targets still apply.
