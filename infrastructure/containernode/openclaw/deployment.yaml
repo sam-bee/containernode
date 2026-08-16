@@ -217,6 +217,9 @@ spec:
           volumeMounts:
             - name: home
               mountPath: /home/node/.openclaw
+            - name: research-playwright-media
+              mountPath: /home/node/.openclaw/workspace-grok-number1/media/research-playwright
+              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
@@ -253,5 +256,9 @@ spec:
                 path: references/tracing.md
               - key: video-recording.md
                 path: references/video-recording.md
+        - name: research-playwright-media
+          hostPath:
+            path: /mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp
+            type: Directory
         - name: tmp
           emptyDir: {}

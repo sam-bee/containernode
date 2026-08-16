@@ -75,3 +75,18 @@ The gateway must route `exec`, the node-local requested policy must permit it, a
 explicitly for each research agent. The host default is deny, so setting the node-local requested policy to `full` does
 not authorize the non-research `default` agent. Add each future research agent to the gateway and host approval layers
 rather than relaxing the host default.
+
+## Research media bridge
+
+Files created by `exec` exist on the paired `research` node, not in the OpenClaw gateway pod. Syncthing replicates the
+Packagist `.playwright-mcp` directory to the same host path on `containernode`; the deployment mounts only that directory
+read-only at `workspace-grok-number1/media/research-playwright`. This lets OpenClaw resolve node-generated screenshots
+as workspace media without exposing the rest of the synced research tree to the gateway.
+
+The two sides of the bridge are:
+
+- research-node output: `/mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp/outbound/<file>`
+- reply media path: `MEDIA:./media/research-playwright/outbound/<file>`
+
+Keep the source directory mounted with `hostPath.type: Directory`. A missing Syncthing directory should prevent the
+gateway rollout instead of silently creating an empty path that turns attachments into `Media failed` warnings.
