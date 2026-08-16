@@ -1,0 +1,30 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: openclaw-agents
+  namespace: flux-system
+spec:
+  interval: 1m
+  ref:
+    branch: master
+  secretRef:
+    name: openclaw-agents-git-auth
+  url: ssh://git@github.com/sam-bee/agents
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: containernode-openclaw
+  namespace: flux-system
+spec:
+  interval: 1m
+  ref:
+    branch: main
+  secretRef:
+    name: flux-system
+  url: ssh://git@github.com/sam-bee/containernode
+  include:
+    - repository:
+        name: openclaw-agents
+      fromPath: agents
+      toPath: infrastructure/containernode/openclaw/agent-content
