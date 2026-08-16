@@ -41,7 +41,13 @@ journalctl --user -u openclaw-node.service
 Research agents are allowed arbitrary commands on this node so they can edit code and use Git, but the node service
 runs inside a host-enforced systemd write boundary. It can modify OpenClaw's own state and
 `/mnt/workfiles/synced/tech-projects/security-research/01-packagist`; the rest of the host filesystem is read-only.
-Raw SSH keys, the Docker control socket, and the desktop/user systemd session are inaccessible from the service.
+Raw SSH keys, personal Docker client state, and the desktop/user systemd session are inaccessible from the service.
+The existing rootful Docker socket is deliberately available to the research agent. This is root-equivalent host
+authority and means the filesystem boundary is not a security boundary against malicious Docker operations.
+
+The Packagist Compose services retain their existing `1000:1984` PHP/Node identity so bind-mounted dependencies remain
+owned by `sierra:shareddata`. OpenClaw uses an isolated Docker client directory at
+`~/.openclaw/docker-config`; it does not use or expose the operator's personal `~/.docker` state.
 
 Git authentication is provided through a dedicated SSH-agent socket. The node can ask that agent to sign Git SSH
 connections but cannot read the underlying private-key file. Both GitHub and GitLab access should be tested after
