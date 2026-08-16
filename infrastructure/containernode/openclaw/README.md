@@ -83,10 +83,17 @@ Packagist `.playwright-mcp` directory to the same host path on `containernode`; 
 read-only at `workspace-grok-number1/research-playwright-media`. This lets OpenClaw resolve node-generated screenshots
 as workspace media without exposing the rest of the synced research tree to the gateway.
 
+The same read-only volume is also mounted at the research node's absolute `.playwright-mcp` path. This compatibility
+mount makes old sessions and imperfect model replies deterministic: a `MEDIA:` directive that uses the research-side
+absolute path still resolves, instead of relying exclusively on the agent to rewrite it to the preferred workspace path.
+
 The two sides of the bridge are:
 
 - research-node output: `/mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp/outbound/<file>`
 - reply media path: `MEDIA:./research-playwright-media/outbound/<file>`
+
+The preferred reply path is workspace-relative. The absolute research-node path is supported as a compatibility
+fallback and exposes the same narrow read-only directory, not the surrounding research checkout.
 
 Keep the source directory mounted with `hostPath.type: Directory`. A missing Syncthing directory should prevent the
 gateway rollout instead of silently creating an empty path that turns attachments into `Media failed` warnings.

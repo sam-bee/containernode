@@ -220,6 +220,9 @@ spec:
             - name: research-playwright-media
               mountPath: /home/node/.openclaw/workspace-grok-number1/research-playwright-media
               readOnly: true
+            - name: research-playwright-media
+              mountPath: /mnt/workfiles/synced/tech-projects/security-research/01-packagist/.playwright-mcp
+              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
