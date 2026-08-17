@@ -1,0 +1,9 @@
+{
+  "name": "containernode-openclaw-image",
+  "private": true,
+  "version": "2026.8.1-beta.2",
+  "description": "Reproducible package lock for the containernode OpenClaw image",
+  "dependencies": {
+    "openclaw": "2026.8.1-beta.2"
+  }
+}
