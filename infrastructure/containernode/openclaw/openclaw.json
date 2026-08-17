@@ -96,6 +96,11 @@
     }
   ],
   "plugins": {
+    "load": {
+      "paths": [
+        "/app/node_modules/@openclaw/codex"
+      ]
+    },
     "allow": [
       "codex",
       "deepseek",

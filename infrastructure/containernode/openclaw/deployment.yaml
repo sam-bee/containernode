@@ -76,7 +76,7 @@ spec:
             - name: research-media-path-compat
               mountPath: /research-media-path-compat
         - name: install-external-plugins
-          image: localhost/openclaw:2026.8.1-beta.2-npm.1@sha256:2ee7141b4c6dfa418dfab5a90003bd5c5130842d1cc9255c8ab04ff014da91ae
+          image: localhost/openclaw:2026.8.1-beta.2-npm.2@sha256:e023a3a886504eea132eec2147bacf346c7731b98ca926370e91b8b9e6b18174
           imagePullPolicy: Never
           command:
             - /bin/sh
@@ -148,7 +148,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: gateway
-          image: localhost/openclaw:2026.8.1-beta.2-npm.1@sha256:2ee7141b4c6dfa418dfab5a90003bd5c5130842d1cc9255c8ab04ff014da91ae
+          image: localhost/openclaw:2026.8.1-beta.2-npm.2@sha256:e023a3a886504eea132eec2147bacf346c7731b98ca926370e91b8b9e6b18174
           imagePullPolicy: Never
           command:
             - node
