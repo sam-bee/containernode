@@ -12,7 +12,7 @@ Build it from the repository root:
 docker build \
   --platform linux/amd64 \
   --provenance=false \
-  --tag localhost/openclaw:2026.8.1-beta.2-npm.2 \
+  --tag localhost/openclaw:2026.8.1-beta.2-npm.3 \
   infrastructure/containernode/openclaw/image
 ```
 

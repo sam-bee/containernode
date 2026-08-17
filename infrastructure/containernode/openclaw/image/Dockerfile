@@ -17,7 +17,8 @@ FROM ghcr.io/openclaw/openclaw@sha256:8789721d2e9b24b780a1504b56deb4c6bd5c7dbf96
 USER root
 RUN find /app -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 COPY --from=package-install --chown=node:node /runtime/ /app/
-RUN ln -sfn /app/openclaw.mjs /usr/local/bin/openclaw \
+RUN ln -sfn /app /app/node_modules/openclaw \
+    && ln -sfn /app/openclaw.mjs /usr/local/bin/openclaw \
     && chmod 0755 /app/openclaw.mjs \
     && test "$(node -p "require('/app/package.json').version")" = "2026.8.1-beta.2"
 
