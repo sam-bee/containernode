@@ -21,6 +21,7 @@ composite artifact.
 | --- | --- | --- | --- |
 | `default` | `@codex:matrix` | `outside-agents` | `agents/codex/AGENTS.md` |
 | `grok-number1` | `@grok-number1:matrix` | `security-research` | `agents/grok-number1/AGENTS.md` |
+| `personal` | `@personal:matrix` | `personal` | built-in OpenClaw prompt |
 
 Edit agent content on the `master` branch of the agents repository. An agents commit changes the generated ConfigMap
 hash, which rolls out OpenClaw; the init container then copies each prompt into its isolated workspace. GitHub is the
@@ -32,6 +33,16 @@ name the skill path.
 
 The `grok-number1` model credential is created interactively with xAI OAuth and retained in the OpenClaw home PVC;
 it is not stored in Git. Matrix and gateway tokens are SOPS-encrypted in this directory.
+
+The `personal` agent uses `deepseek/deepseek-v4-pro` with no host or web tools. Its Matrix token is SOPS-encrypted,
+but its DeepSeek API key is intentionally not pre-provisioned. Add the key interactively when it is available; the
+resulting per-agent auth profile is retained in the OpenClaw home PVC:
+
+```sh
+kubectl exec -it -n openclaw deploy/openclaw -- \
+  openclaw models auth --agent personal paste-api-key \
+  --provider deepseek --profile-id deepseek:personal
+```
 
 ## Research node
 

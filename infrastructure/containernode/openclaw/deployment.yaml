@@ -31,7 +31,7 @@ spec:
             - |
               set -eu
 
-              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli
+              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli /home/node/.openclaw/workspace-personal
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
               cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
@@ -75,19 +75,22 @@ spec:
               readOnly: true
             - name: research-media-path-compat
               mountPath: /research-media-path-compat
-        - name: install-matrix-plugin
+        - name: install-external-plugins
           image: ghcr.io/openclaw/openclaw:2026.7.1-2-slim
           command:
             - /bin/sh
             - -ec
           args:
             - |
-              plugin_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
-              if [ -n "${plugin_manifest}" ] && grep -q '"version": "2026.7.1"' "${plugin_manifest}"; then
-                exit 0
+              matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
+              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.7.1"' "${matrix_manifest}"; }; then
+                openclaw plugins install '@openclaw/matrix@2026.7.1' --pin --force
               fi
 
-              openclaw plugins install '@openclaw/matrix@2026.7.1' --pin --force
+              deepseek_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/deepseek-provider/package.json' -print -quit 2>/dev/null || true)"
+              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.7.1"' "${deepseek_manifest}"; }; then
+                openclaw plugins install '@openclaw/deepseek-provider@2026.7.1' --pin --force
+              fi
           env:
             - name: HOME
               value: /home/node
@@ -97,6 +100,8 @@ spec:
               value: /home/node/.openclaw/openclaw.json
             - name: OPENCLAW_STATE_DIR
               value: /home/node/.openclaw
+            - name: NPM_CONFIG_CACHE
+              value: /home/node/.openclaw/npm-cache
             - name: OPENCLAW_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -112,6 +117,11 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
+            - name: MATRIX_PERSONAL_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_PERSONAL_ACCESS_TOKEN
           resources:
             requests:
               cpu: 50m
@@ -175,6 +185,11 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_GROK_NUMBER1_ACCESS_TOKEN
+            - name: MATRIX_PERSONAL_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_PERSONAL_ACCESS_TOKEN
           ports:
             - name: gateway
               containerPort: 18789

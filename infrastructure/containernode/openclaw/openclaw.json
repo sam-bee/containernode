@@ -55,6 +55,19 @@
             "timeoutSec": 60
           }
         }
+      },
+      {
+        "id": "personal",
+        "name": "personal",
+        "description": "Private DeepSeek-backed personal assistant",
+        "workspace": "~/.openclaw/workspace-personal",
+        "model": {
+          "primary": "deepseek/deepseek-v4-pro"
+        },
+        "thinkingDefault": "xhigh",
+        "tools": {
+          "allow": []
+        }
       }
     ]
   },
@@ -74,16 +87,28 @@
         "channel": "matrix",
         "accountId": "grok-number1"
       }
+    },
+    {
+      "agentId": "personal",
+      "comment": "Route the dedicated personal Matrix account to its isolated DeepSeek agent",
+      "match": {
+        "channel": "matrix",
+        "accountId": "personal"
+      }
     }
   ],
   "plugins": {
     "allow": [
       "codex",
+      "deepseek",
       "matrix",
       "xai"
     ],
     "entries": {
       "codex": {
+        "enabled": true
+      },
+      "deepseek": {
         "enabled": true
       },
       "matrix": {
@@ -140,6 +165,15 @@
           "deviceName": "OpenClaw grok-number1 on containernode",
           "encryption": true,
           "historyLimit": 20
+        },
+        "personal": {
+          "name": "personal",
+          "userId": "@personal:matrix",
+          "accessToken": "${MATRIX_PERSONAL_ACCESS_TOKEN}",
+          "deviceId": "ENBHYMFOID",
+          "deviceName": "OpenClaw personal on containernode",
+          "encryption": true,
+          "historyLimit": 20
         }
       },
       "groups": {
@@ -175,6 +209,18 @@
               "web_search"
             ]
           }
+        },
+        "!biJYZfayIzCAfLrPPM:matrix": {
+          "account": "personal",
+          "enabled": true,
+          "requireMention": true,
+          "allowBots": false,
+          "users": [
+            "@sierra:matrix"
+          ],
+          "tools": {
+            "allow": []
+          }
         }
       },
       "dm": {
@@ -195,7 +241,8 @@
       "autoJoin": "allowlist",
       "autoJoinAllowlist": [
         "!vbyFNpnEQVrFnIhHgx:matrix",
-        "!AFevwmXOiPKDVYXVZR:matrix"
+        "!AFevwmXOiPKDVYXVZR:matrix",
+        "!biJYZfayIzCAfLrPPM:matrix"
       ],
       "threadReplies": "inbound",
       "replyToMode": "off",
