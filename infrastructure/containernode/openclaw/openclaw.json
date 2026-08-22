@@ -65,6 +65,7 @@
       },
       "local-qwen": {
         "baseUrl": "${THREE_EIGHT_BASE_URL}",
+        "apiKey": "local-qwen",
         "api": "openai-completions",
         "timeoutSeconds": 300,
         "models": [
