@@ -22,6 +22,7 @@ composite artifact.
 | `default` | `@codex:matrix` | `outside-agents` | `agents/codex/AGENTS.md` |
 | `grok-number1` | `@grok-number1:matrix` | `security-research` | `agents/grok-number1/AGENTS.md` |
 | `personal` | `@personal:matrix` | `personal` | built-in OpenClaw prompt |
+| `3-8` | `@3-8:matrix` | `personal-diary` | `agents/3-8/AGENTS.md` |
 
 Edit agent content on the `master` branch of the agents repository. An agents commit changes the generated ConfigMap
 hash, which rolls out OpenClaw; the init container then copies each prompt into its isolated workspace. GitHub is the
@@ -43,6 +44,9 @@ kubectl exec -it -n openclaw deploy/openclaw -- \
   openclaw models auth --agent personal paste-api-key \
   --provider deepseek --profile-id deepseek:personal
 ```
+
+The `3-8` agent uses the private OpenAI-compatible Qwen endpoint configured by the SOPS-encrypted
+`THREE_EIGHT_BASE_URL` value. It has an isolated Markdown-configured workspace and no host or web tools.
 
 ## Research node
 

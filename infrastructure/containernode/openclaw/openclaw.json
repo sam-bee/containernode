@@ -62,6 +62,36 @@
             }
           }
         ]
+      },
+      "local-qwen": {
+        "baseUrl": "${THREE_EIGHT_BASE_URL}",
+        "api": "openai-completions",
+        "timeoutSeconds": 300,
+        "models": [
+          {
+            "id": "/mnt/internal-ssd-2/ai/5070/models/Qwen3.8-27B-Uncensored-IQ3_M.gguf",
+            "name": "Qwen 3.8 27B Uncensored IQ3_M",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 17152,
+            "maxTokens": 4096,
+            "compat": {
+              "supportsReasoningEffort": false,
+              "supportsTemperature": true,
+              "supportsTools": false,
+              "maxTokensField": "max_tokens",
+              "thinkingFormat": "qwen"
+            }
+          }
+        ]
       }
     }
   },
@@ -117,6 +147,18 @@
         "tools": {
           "allow": []
         }
+      },
+      {
+        "id": "3-8",
+        "name": "3-8",
+        "description": "Private Qwen-backed personal-diary assistant",
+        "workspace": "~/.openclaw/workspace-3-8",
+        "model": {
+          "primary": "local-qwen//mnt/internal-ssd-2/ai/5070/models/Qwen3.8-27B-Uncensored-IQ3_M.gguf"
+        },
+        "tools": {
+          "allow": []
+        }
       }
     ]
   },
@@ -143,6 +185,14 @@
       "match": {
         "channel": "matrix",
         "accountId": "personal"
+      }
+    },
+    {
+      "agentId": "3-8",
+      "comment": "Route the dedicated 3-8 Matrix account to its isolated personal-diary agent",
+      "match": {
+        "channel": "matrix",
+        "accountId": "3-8"
       }
     }
   ],
@@ -228,6 +278,15 @@
           "deviceName": "OpenClaw personal on containernode",
           "encryption": true,
           "historyLimit": 20
+        },
+        "3-8": {
+          "name": "3-8",
+          "userId": "@3-8:matrix",
+          "accessToken": "${MATRIX_3_8_ACCESS_TOKEN}",
+          "deviceId": "PMGVHIVFVM",
+          "deviceName": "OpenClaw 3-8 on containernode",
+          "encryption": true,
+          "historyLimit": 20
         }
       },
       "groups": {
@@ -275,6 +334,18 @@
           "tools": {
             "allow": []
           }
+        },
+        "!afdgSePKBUXaovUtNJ:matrix": {
+          "account": "3-8",
+          "enabled": true,
+          "requireMention": true,
+          "allowBots": false,
+          "users": [
+            "@sierra:matrix"
+          ],
+          "tools": {
+            "allow": []
+          }
         }
       },
       "dm": {
@@ -296,7 +367,8 @@
       "autoJoinAllowlist": [
         "!vbyFNpnEQVrFnIhHgx:matrix",
         "!AFevwmXOiPKDVYXVZR:matrix",
-        "!biJYZfayIzCAfLrPPM:matrix"
+        "!biJYZfayIzCAfLrPPM:matrix",
+        "!afdgSePKBUXaovUtNJ:matrix"
       ],
       "threadReplies": "inbound",
       "replyToMode": "off",

@@ -31,7 +31,11 @@ spec:
             - |
               set -eu
 
-              mkdir -p /home/node/.openclaw/workspace /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli /home/node/.openclaw/workspace-personal
+              mkdir -p \
+                /home/node/.openclaw/workspace \
+                /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli \
+                /home/node/.openclaw/workspace-personal \
+                /home/node/.openclaw/workspace-3-8
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
               cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
@@ -40,8 +44,15 @@ spec:
               cp /prompt-grok-number1/USER.md /home/node/.openclaw/workspace-grok-number1/USER.md
               cp /prompt-grok-number1/TOOLS.md /home/node/.openclaw/workspace-grok-number1/TOOLS.md
               cp /prompt-grok-number1/HEARTBEAT.md /home/node/.openclaw/workspace-grok-number1/HEARTBEAT.md
+              cp /prompt-3-8/AGENTS.md /home/node/.openclaw/workspace-3-8/AGENTS.md
+              cp /prompt-3-8/SOUL.md /home/node/.openclaw/workspace-3-8/SOUL.md
+              cp /prompt-3-8/IDENTITY.md /home/node/.openclaw/workspace-3-8/IDENTITY.md
+              cp /prompt-3-8/USER.md /home/node/.openclaw/workspace-3-8/USER.md
+              cp /prompt-3-8/TOOLS.md /home/node/.openclaw/workspace-3-8/TOOLS.md
+              cp /prompt-3-8/HEARTBEAT.md /home/node/.openclaw/workspace-3-8/HEARTBEAT.md
               cp -R /skill-grok-number1-playwright-cli/. /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli/
               rm -f /home/node/.openclaw/workspace-grok-number1/BOOTSTRAP.md
+              rm -f /home/node/.openclaw/workspace-3-8/BOOTSTRAP.md
               ln -s /home/node/.openclaw/workspace-grok-number1/research-playwright-media /research-media-path-compat/.playwright-mcp
           resources:
             requests:
@@ -69,6 +80,9 @@ spec:
               readOnly: true
             - name: prompt-grok-number1
               mountPath: /prompt-grok-number1
+              readOnly: true
+            - name: prompt-3-8
+              mountPath: /prompt-3-8
               readOnly: true
             - name: skill-grok-number1-playwright-cli
               mountPath: /skill-grok-number1-playwright-cli
@@ -123,6 +137,16 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_PERSONAL_ACCESS_TOKEN
+            - name: MATRIX_3_8_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_3_8_ACCESS_TOKEN
+            - name: THREE_EIGHT_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: THREE_EIGHT_BASE_URL
           resources:
             requests:
               cpu: 50m
@@ -192,6 +216,16 @@ spec:
                 secretKeyRef:
                   name: openclaw-matrix-secrets
                   key: MATRIX_PERSONAL_ACCESS_TOKEN
+            - name: MATRIX_3_8_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-matrix-secrets
+                  key: MATRIX_3_8_ACCESS_TOKEN
+            - name: THREE_EIGHT_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: THREE_EIGHT_BASE_URL
           ports:
             - name: gateway
               containerPort: 18789
@@ -255,6 +289,9 @@ spec:
         - name: prompt-grok-number1
           configMap:
             name: openclaw-grok-number1-prompt
+        - name: prompt-3-8
+          configMap:
+            name: openclaw-3-8-prompt
         - name: skill-grok-number1-playwright-cli
           configMap:
             name: openclaw-grok-number1-playwright-cli-skill
