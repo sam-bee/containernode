@@ -98,13 +98,13 @@ spec:
           args:
             - |
               matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.7.1"' "${matrix_manifest}"; }; then
-                openclaw plugins install '@openclaw/matrix@2026.7.1' --pin --force
+              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.8.1-beta.2"' "${matrix_manifest}"; }; then
+                openclaw plugins install '@openclaw/matrix@2026.8.1-beta.2' --pin --force
               fi
 
               deepseek_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/deepseek-provider/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.7.1"' "${deepseek_manifest}"; }; then
-                openclaw plugins install '@openclaw/deepseek-provider@2026.7.1' --pin --force
+              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.8.1-beta.2"' "${deepseek_manifest}"; }; then
+                openclaw plugins install '@openclaw/deepseek-provider@2026.8.1-beta.2' --pin --force
               fi
           env:
             - name: HOME
