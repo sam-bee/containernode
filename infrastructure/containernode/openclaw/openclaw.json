@@ -157,6 +157,7 @@
         "model": {
           "primary": "local-qwen//mnt/internal-ssd-2/ai/5070/models/Qwen3.8-27B-Uncensored-IQ3_M.gguf"
         },
+        "thinkingDefault": "off",
         "tools": {
           "allow": []
         }
