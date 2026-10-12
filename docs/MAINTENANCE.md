@@ -340,6 +340,45 @@ Do not roll back by replacing only the binary after a minor-version upgrade. Use
 token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
 
 
+## Restrict ServiceLB to containernode
+
+ServiceLB is restricted to `containernode` with the node label
+`svccontroller.k3s.cattle.io/enablelb=true`. Once at least one node has this label, K3s only schedules ServiceLB pods
+on nodes labeled `true`. Leave future workers such as `rpi` unlabeled so they do not run Traefik's load balancer.
+See [K3s ServiceLB node selection](https://docs.k3s.io/networking/networking-services#controlling-servicelb-node-selection).
+
+The host-local drop-in records the registration label for rebuilds. From the repository root on `containernode`,
+install it before the first K3s start on a rebuilt host:
+
+```bash
+sudo install -D -m 0644 \
+  host/containernode/etc/rancher/k3s/config.yaml.d/90-servicelb-node-label.yaml \
+  /etc/rancher/k3s/config.yaml.d/90-servicelb-node-label.yaml
+```
+
+The `node-label+` key appends to any other configured node labels. Repeating the install is safe. K3s applies
+registration labels when a node is first registered; for an existing node, reapply the label directly without
+restarting K3s:
+
+```bash
+kubectl label node containernode svccontroller.k3s.cattle.io/enablelb=true --overwrite
+```
+
+Before labeling, confirm `containernode` is Ready and hosts the healthy ServiceLB pods for all existing LoadBalancer
+Services. Switching to the allow-list can move those pods from unlabeled nodes and briefly interrupt ingress.
+The label command is idempotent and does not change the Traefik Service or its ports.
+
+Verify the label, DaemonSet health, and pod placement:
+
+```bash
+kubectl get nodes -L svccontroller.k3s.cattle.io/enablelb
+kubectl rollout status daemonset -n kube-system \
+  -l svccontroller.k3s.cattle.io/svcname=traefik --timeout=120s
+kubectl get daemonsets,pods -n kube-system \
+  -l svccontroller.k3s.cattle.io/svcname=traefik -o wide
+```
+
+
 ## Maintain the Flux-owned local-path provisioner
 
 The bundled K3s `local-storage` AddOn is intentionally skipped so Flux can manage a newer local-path provisioner from

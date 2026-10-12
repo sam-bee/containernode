@@ -1,0 +1,4 @@
+# Keep ServiceLB on containernode when this node is rebuilt.
+# Append so other configured node labels are preserved.
+node-label+:
+  - svccontroller.k3s.cattle.io/enablelb=true
