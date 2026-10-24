@@ -53,7 +53,8 @@ spec:
               cp -R /skill-grok-number1-playwright-cli/. /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli/
               rm -f /home/node/.openclaw/workspace-grok-number1/BOOTSTRAP.md
               rm -f /home/node/.openclaw/workspace-3-8/BOOTSTRAP.md
-              ln -s /home/node/.openclaw/workspace-grok-number1/research-playwright-media /research-media-path-compat/.playwright-mcp
+              # The emptyDir survives container restarts; replace the link without following it.
+              ln -sfn /home/node/.openclaw/workspace-grok-number1/research-playwright-media /research-media-path-compat/.playwright-mcp
           resources:
             requests:
               cpu: 10m
