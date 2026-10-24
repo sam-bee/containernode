@@ -91,10 +91,20 @@ sudo host/containernode/upgrade-k3s.sh --check
 ```
 
 This checks workload and Flux readiness, refuses suspended reconciliations, verifies the SQLite datastore and server
-token exist, checks the local-storage skip marker and service files, and downloads and verifies the required release
+token exist, confirms the running k3s process has that SQLite database open, checks the local-storage skip marker and
+service files, and downloads and verifies the required release
 binaries. It does not stop k3s, take a backup, install a binary, or print credentials. Check available space and mounted
 application storage on the host as well. Ensure application backups and a protected off-node recovery copy are available;
 the helper's Kubernetes datastore backup does not back up application volumes.
+
+The existence of `server/db/etcd/` alone does not mean etcd is initialized. The helper rejects an initialized etcd WAL
+directory or member database and verifies the live SQLite file instead. Do not remove datastore directories to bypass
+the check. See [k3s's initialization check](https://github.com/k3s-io/k3s/blob/v1.36.3%2Bk3s1/pkg/etcd/etcd.go).
+
+When using a Proxmox VM backup as the recovery copy, wait for it to complete successfully and verify its included disks
+cover the application data under `/mnt/userdata-clusterfiles`, `/mnt/twindrives-clusterfiles`, and `/mnt/workfiles`.
+Data outside the included virtual disks needs a separate backup. For a live backup, confirm the guest-agent filesystem
+freeze/thaw succeeds; a live VM backup is not equivalent to an application-native database backup.
 
 Both the current GitLab 19.2.2 installation and its web-ingress isolation need separate attention: the published minimum
 for Kubernetes 1.36 is GitLab 19.3. Keep its temporary ingress protection in place during this k3s patch upgrade.

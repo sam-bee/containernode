@@ -97,6 +97,33 @@ not_ready_reconciliation_count() {
   ] | length'
 }
 
+require_active_sqlite() {
+  local process_id
+  local database_path
+  local descriptor
+  local opened_path
+
+  [[ -f "${K3S_DATA_DIR}/server/db/state.db" ]] \
+    || die "expected the single-node SQLite datastore at ${K3S_DATA_DIR}/server/db/state.db"
+  # K3s itself uses the WAL directory to identify initialized embedded etcd.
+  # The parent etcd directory may exist even when the cluster uses SQLite.
+  [[ ! -d "${K3S_DATA_DIR}/server/db/etcd/member/wal" \
+    && ! -f "${K3S_DATA_DIR}/server/db/etcd/member/snap/db" ]] \
+    || die "initialized embedded etcd was found; this helper supports SQLite only"
+
+  process_id="$(systemctl show k3s --property=MainPID --value)" \
+    || die "could not identify the running k3s process"
+  [[ "${process_id}" =~ ^[1-9][0-9]*$ && -d "/proc/${process_id}/fd" ]] \
+    || die "could not inspect the running k3s process"
+  database_path="$(readlink -f "${K3S_DATA_DIR}/server/db/state.db")" \
+    || die "could not resolve the SQLite database path"
+  for descriptor in /proc/"${process_id}"/fd/*; do
+    opened_path="$(readlink "${descriptor}" 2>/dev/null)" || continue
+    [[ "${opened_path}" == "${database_path}" ]] && return 0
+  done
+  die "the running k3s process does not have the expected SQLite database open; verify its datastore configuration"
+}
+
 wait_for_workloads() {
   for _ in $(seq 1 180); do
     if [[ "$(not_ready_pod_count 2>/dev/null)" == "0" ]]; then
@@ -228,7 +255,7 @@ main() {
   [[ "${TARGET_VERSION}" == "${UPGRADE_VERSIONS[-1]}" ]] \
     || die "k3s-version is not represented by the validated upgrade path"
 
-  for command in awk chmod cp curl date find head install jq mktemp seq sha256sum sort systemctl xargs; do
+  for command in awk chmod cp curl date find head install jq mktemp readlink seq sha256sum sort systemctl xargs; do
     require_command "${command}"
   done
   [[ -x "${K3S_BINARY}" ]] || die "k3s binary not found at ${K3S_BINARY}"
@@ -280,10 +307,7 @@ main() {
   [[ "$(not_ready_reconciliation_count)" == "0" ]] \
     || die "one or more Flux reconciliations are suspended or not ready"
 
-  [[ -f "${K3S_DATA_DIR}/server/db/state.db" ]] \
-    || die "expected the single-node SQLite datastore at ${K3S_DATA_DIR}/server/db/state.db"
-  [[ ! -d "${K3S_DATA_DIR}/server/db/etcd" ]] \
-    || die "embedded etcd was found; this helper supports SQLite only"
+  require_active_sqlite
   [[ -s "${K3S_DATA_DIR}/server/token" ]] || die "k3s server token is missing or empty"
   [[ -f "${K3S_DATA_DIR}/server/manifests/local-storage.yaml.skip" ]] \
     || die "install the local-storage.yaml.skip marker before restarting k3s; see docs/MAINTENANCE.md"
