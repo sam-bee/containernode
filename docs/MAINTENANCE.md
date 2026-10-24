@@ -185,6 +185,11 @@ Web access remains intentionally disabled with `global.ingress.enabled: false` a
 The registry and KAS are also disabled. The application components and Git-over-SSH service still run; this is web
 ingress isolation, not a shutdown of the namespace. Keep these settings when changing the chart version.
 
+GitLab still requires a publicly trusted Let's Encrypt certificate. `gitlab/certificate.sops.yaml` manages
+`gitlab-web-tls` explicitly using the Cloudflare DNS-01 ClusterIssuer, so cert-manager can renew it while web ingress
+is disabled. Keep certificate ownership in this manifest and leave the ingress issuer annotation unset when restoring
+web access. Jellyfin currently uses Tailscale Serve HTTPS and has no cert-manager Certificate resource.
+
 Before an upgrade, create a native backup from the Toolbox pod with `backup-utility`, verify the resulting archive in
 the configured backup bucket, and save the Kubernetes secrets in a separate encrypted recovery copy. The native backup
 does not contain the Rails encryption secrets. Follow GitLab's required upgrade stops and ensure background migrations

@@ -1,0 +1,29 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: gitlab-web-tls
+    namespace: gitlab
+spec:
+    secretName: gitlab-web-tls
+    commonName: ENC[AES256_GCM,data:m/UgiL7qEXILzcKacmzZ8zqsQ9NTfzUyrQQ=,iv:1XzYXQkCsZ2Mp48ZLfVHUqW4mMCEsDVl1SZFZiCz0qU=,tag:7SjvNBwzciTafvZ5q7SUjw==,type:str]
+    dnsNames:
+        - ENC[AES256_GCM,data:aQGVK2UOpkQ8LwAw2/D4icMA8xYR9+/7NMM=,iv:lodOxbn1Tr0Y66UqnE3Tx4mYJHIYwCfemzrQPLPfYog=,tag:HcXg3lDTQypsryZ/92SZmA==,type:str]
+    issuerRef:
+        name: letsencrypt-production-dns01-cloudflare
+        kind: ClusterIssuer
+        group: cert-manager.io
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJRlZXSEtpMXVRSHA2anNX
+            bWplSDR5UXMxSXgxcENsOVVvcmtBN1JyczBNCnNhZGR6M050OVNhME1mNkFJZGtY
+            M2lmeVg4QUdEK2hPU3cxSXRPMFdaTzAKLS0tIFlFMWpTKzh1NG15RDg4M25CWVR1
+            WmxYWHZ4c3pqaVR3UVF6T1hWQkhsM1EKvCeH6Z0Ie1775aWdD+C4/sPPFBRVzeUA
+            kkfzPYbEQaqOg6Sxj2qxmp+iT8XYLBmtb+RqNVWicOwGdJU4Qb7XiQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1a73alcfdvadv96hc68nx6sf4wdzysnnnvy4l634hq569vx377chsrck77m
+    encrypted_regex: ^(commonName|dnsNames)$
+    lastmodified: "2026-10-24T18:52:31Z"
+    mac: ENC[AES256_GCM,data:nlaw+kT/1UsX4TNK7LGZ/sDyCJTgs0uCj7aOEtQGTqL+g1eHoIn13u/UiJoVBak4I5srZUZQQPkxxttna71NTskz5zfgEsxcTSNCjNRCPmOvuhI0T1KgL0C3rc2rmG1Qo667chknJi7TFKmhXkjs88Lg96wKVRqf3cfNuoyCmSg=,iv:gdlhnPuiWMlMC2GEIo8Z2BUeUT2PslIrhx1keZv2D6E=,tag:oyjHfZPo3wg++YgvwWph1Q==,type:str]
+    version: 3.13.3

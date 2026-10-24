@@ -17,4 +17,5 @@ resources:
   - gitlab-garage.secret.sops.yaml
   - valkey.yaml
   - garage.yaml
+  - certificate.sops.yaml
   - helmrelease.yaml
