@@ -106,8 +106,8 @@ cover the application data under `/mnt/userdata-clusterfiles`, `/mnt/twindrives-
 Data outside the included virtual disks needs a separate backup. For a live backup, confirm the guest-agent filesystem
 freeze/thaw succeeds; a live VM backup is not equivalent to an application-native database backup.
 
-Both the current GitLab 19.2.2 installation and its web-ingress isolation need separate attention: the published minimum
-for Kubernetes 1.36 is GitLab 19.3. Keep its temporary ingress protection in place during this k3s patch upgrade.
+GitLab's web ingress remains intentionally disabled while its security upgrade is validated. Preserve that isolation
+during k3s maintenance. The published minimum for Kubernetes 1.37 is GitLab 19.5.
 
 During the agreed maintenance window, run:
 
@@ -170,6 +170,21 @@ The Grafana chart generates the initial admin password inside the cluster. Retri
 kubectl get secret grafana -n observability -o jsonpath='{.data.admin-password}' | base64 -d && echo
 ```
 
+
+## GitLab security maintenance
+
+GitLab is pinned to chart `10.5.1` / GitLab `19.5.1`, the latest stable release verified on 24 October 2026. This includes
+the critical CVE-2026-110264 fix. Recheck the [GitLab patch release notes](https://docs.gitlab.com/releases/patches/)
+and [chart version mappings](https://docs.gitlab.com/charts/installation/version_mappings/) before future upgrades.
+
+Web access remains intentionally disabled with `global.ingress.enabled: false` and `global.gatewayApi.enabled: false`.
+The registry and KAS are also disabled. The application components and Git-over-SSH service still run; this is web
+ingress isolation, not a shutdown of the namespace. Keep these settings when changing the chart version.
+
+Before an upgrade, create a native backup from the Toolbox pod with `backup-utility`, verify the resulting archive in
+the configured backup bucket, and save the Kubernetes secrets in a separate encrypted recovery copy. The native backup
+does not contain the Rails encryption secrets. Follow GitLab's required upgrade stops and ensure background migrations
+are finished or finalized before advancing to the next stop. The October 2026 upgrade used `19.2.2 -> 19.2.9 -> 19.5.1`.
 
 ## PostgreSQL 17 and 18 service split
 
