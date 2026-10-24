@@ -74,11 +74,32 @@ The token needs read permissions on this repository only, and no other privilege
 The manually applied k3s target for `containernode` is pinned in `host/containernode/k3s-version`. The upgrade helper
 is specific to this single-node amd64 server and its SQLite datastore. It does not float on a release channel.
 
+The next target is `v1.36.5+k3s1`, the stable-channel patch release checked on 24 October 2026. Kubernetes 1.37 is a
+separate step: first bring GitLab to a supported release (the published minimum for 1.37 is GitLab 19.5) and wait for
+cert-manager to explicitly support 1.37; cert-manager 1.21 currently documents support through 1.36.
+Recheck the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/) and
+[cert-manager support table](https://cert-manager.io/docs/releases/) before scheduling that minor upgrade.
+
 Before changing the target, update Flux and cluster add-ons such as cert-manager to releases that support the target
 Kubernetes minor. Regenerate `clusters/containernode/flux-system/gotk-components.yaml` with the updated Flux CLI.
 Kubernetes control planes must not skip minor versions.
 
-From the repository root on `containernode`, run:
+From an up-to-date repository checkout on `containernode`, run the preparation check first:
+
+```bash
+sudo host/containernode/upgrade-k3s.sh --check
+```
+
+This checks workload and Flux readiness, refuses suspended reconciliations, verifies the SQLite datastore and server
+token exist, checks the local-storage skip marker and service files, and downloads and verifies the required release
+binaries. It does not stop k3s, take a backup, install a binary, or print credentials. Check available space and mounted
+application storage on the host as well. Ensure application backups and a protected off-node recovery copy are available;
+the helper's Kubernetes datastore backup does not back up application volumes.
+
+Both the current GitLab 19.2.2 installation and its web-ingress isolation need separate attention: the published minimum
+for Kubernetes 1.36 is GitLab 19.3. Keep its temporary ingress protection in place during this k3s patch upgrade.
+
+During the agreed maintenance window, run:
 
 ```bash
 sudo host/containernode/upgrade-k3s.sh

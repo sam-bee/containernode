@@ -18,11 +18,13 @@ readonly -a UPGRADE_VERSIONS=(
   "v1.34.10+k3s1"
   "v1.35.7+k3s1"
   "v1.36.3+k3s1"
+  "v1.36.5+k3s1"
 )
 declare -Ar K3S_SHA256=(
   ["v1.34.10+k3s1"]="e63a3511b2603fd1436a1ea8d228348a3b47334b45024801d41a8c0e2d22e8c4"
   ["v1.35.7+k3s1"]="5fc25309c53031e0cf03f7ee85f6f60969381ff3649039ffda19e30f5c26947a"
   ["v1.36.3+k3s1"]="2f98a9f8fe5782479ee2d54e70a1b10a7f6fd4cae8d38ed3098452dc6eed76b5"
+  ["v1.36.5+k3s1"]="d73847bcd3c5fccef0115b372e2f9a91f3032dc84bbf71518a4617565294d313"
 )
 TEMP_DIR=""
 
@@ -84,6 +86,17 @@ not_ready_pod_count() {
   ] | length'
 }
 
+not_ready_reconciliation_count() {
+  kube get kustomizations,gitrepositories,helmreleases --all-namespaces -o json | jq '[
+    .items[]
+    | select(
+        .spec.suspend == true
+        or .status.observedGeneration != .metadata.generation
+        or ([.status.conditions[]? | select(.type == "Ready" and .status == "True")] | length) == 0
+      )
+  ] | length'
+}
+
 wait_for_workloads() {
   for _ in $(seq 1 180); do
     if [[ "$(not_ready_pod_count 2>/dev/null)" == "0" ]]; then
@@ -128,12 +141,16 @@ create_backup() {
 
   timestamp="$(date --utc +%Y%m%dT%H%M%SZ)"
   backup_dir="${BACKUP_ROOT}/pre-upgrade-${current_version}-${timestamp}"
-  install -d -m 0700 "${backup_dir}"
+  install -d -m 0700 "${backup_dir}" || die "failed to create the backup directory"
 
-  cp --archive "${K3S_BINARY}" "${backup_dir}/k3s"
-  cp --archive /etc/rancher/k3s "${backup_dir}/etc-rancher-k3s"
-  cp --archive /etc/systemd/system/k3s.service "${backup_dir}/k3s.service"
-  cp --archive /etc/systemd/system/k3s.service.env "${backup_dir}/k3s.service.env"
+  cp --archive "${K3S_BINARY}" "${backup_dir}/k3s" \
+    || die "failed to back up the k3s binary"
+  cp --archive /etc/rancher/k3s "${backup_dir}/etc-rancher-k3s" \
+    || die "failed to back up the k3s configuration"
+  cp --archive /etc/systemd/system/k3s.service "${backup_dir}/k3s.service" \
+    || die "failed to back up the k3s service unit"
+  cp --archive /etc/systemd/system/k3s.service.env "${backup_dir}/k3s.service.env" \
+    || die "failed to back up the k3s service environment"
 
   [[ -f "${K3S_DATA_DIR}/server/db/state.db" ]] \
     || die "expected the single-node SQLite datastore at ${K3S_DATA_DIR}/server/db/state.db"
@@ -141,13 +158,13 @@ create_backup() {
     || die "server token not found at ${K3S_DATA_DIR}/server/token"
 
   printf 'Stopping k3s for a consistent SQLite backup...\n' >&2
-  systemctl stop k3s
+  systemctl stop k3s || die "could not stop k3s for a consistent backup"
   if ! cp --archive "${K3S_DATA_DIR}/server/db" "${backup_dir}/db" \
     || ! cp --archive "${K3S_DATA_DIR}/server/token" "${backup_dir}/token"; then
     systemctl start k3s || true
     die "datastore backup failed"
   fi
-  systemctl start k3s
+  systemctl start k3s || die "could not restart k3s after the backup"
 
   wait_for_cluster "${current_version}" "${node_name}" \
     || die "k3s did not recover after the backup; inspect: journalctl -u k3s"
@@ -157,8 +174,9 @@ create_backup() {
     find . -type f -print0 \
       | sort -z \
       | xargs -0 sha256sum
-  ) > "${TEMP_DIR}/SHA256SUMS"
-  install -m 0600 "${TEMP_DIR}/SHA256SUMS" "${backup_dir}/SHA256SUMS"
+  ) > "${TEMP_DIR}/SHA256SUMS" || die "failed to checksum the backup"
+  install -m 0600 "${TEMP_DIR}/SHA256SUMS" "${backup_dir}/SHA256SUMS" \
+    || die "failed to save the backup checksums"
 
   printf '%s\n' "${backup_dir}"
 }
@@ -181,6 +199,7 @@ upgrade_to() {
 }
 
 main() {
+  local check_only=false
   local current_version
   local node_name
   local flux_version
@@ -189,6 +208,20 @@ main() {
   local backup_dir
   local version
   local -a nodes
+
+  case "${1:-}" in
+    --check)
+      [[ "$#" -eq 1 ]] || die "usage: $0 [--check]"
+      check_only=true
+      ;;
+    --help|-h)
+      printf 'Usage: %s [--check]\n\n' "$0"
+      printf '  --check  Validate prerequisites and release downloads without stopping or upgrading k3s.\n'
+      return 0
+      ;;
+    "") [[ "$#" -eq 0 ]] || die "usage: $0 [--check]" ;;
+    *) die "usage: $0 [--check]" ;;
+  esac
 
   [[ "${EUID}" -eq 0 ]] || die "run this script with sudo"
   [[ "$(uname -m)" == "x86_64" ]] || die "only the containernode amd64 host is supported"
@@ -208,7 +241,7 @@ main() {
     *) die "unsupported starting version: ${current_version}" ;;
   esac
 
-  if [[ "${current_version}" == "${TARGET_VERSION}" ]]; then
+  if [[ "${current_version}" == "${TARGET_VERSION}" && "${check_only}" == false ]]; then
     printf 'k3s is already at %s.\n' "${TARGET_VERSION}"
     exit 0
   fi
@@ -244,6 +277,21 @@ main() {
 
   [[ "$(not_ready_pod_count)" == "0" ]] \
     || die "one or more pods are not ready before the upgrade"
+  [[ "$(not_ready_reconciliation_count)" == "0" ]] \
+    || die "one or more Flux reconciliations are suspended or not ready"
+
+  [[ -f "${K3S_DATA_DIR}/server/db/state.db" ]] \
+    || die "expected the single-node SQLite datastore at ${K3S_DATA_DIR}/server/db/state.db"
+  [[ ! -d "${K3S_DATA_DIR}/server/db/etcd" ]] \
+    || die "embedded etcd was found; this helper supports SQLite only"
+  [[ -s "${K3S_DATA_DIR}/server/token" ]] || die "k3s server token is missing or empty"
+  [[ -f "${K3S_DATA_DIR}/server/manifests/local-storage.yaml.skip" ]] \
+    || die "install the local-storage.yaml.skip marker before restarting k3s; see docs/MAINTENANCE.md"
+  [[ -r /etc/systemd/system/k3s.service && -r /etc/systemd/system/k3s.service.env ]] \
+    || die "the k3s service unit or environment file is missing"
+
+  printf 'Preflight passed: %s -> %s; workloads and Flux are healthy; SQLite, token and skip marker exist.\n' \
+    "${current_version}" "${TARGET_VERSION}"
 
   TEMP_DIR="$(mktemp -d)"
   trap 'rm -rf -- "${TEMP_DIR}"' EXIT
@@ -253,6 +301,11 @@ main() {
       download_release "${version}" "${TEMP_DIR}/k3s-${version}"
     fi
   done
+
+  if [[ "${check_only}" == true ]]; then
+    printf 'Release downloads verified. No backup, service restart or upgrade was performed.\n'
+    return 0
+  fi
 
   backup_dir="$(create_backup "${current_version}" "${node_name}")"
   printf 'Backup written to %s.\n' "${backup_dir}"
