@@ -18,4 +18,5 @@ resources:
   - valkey.yaml
   - garage.yaml
   - certificate.sops.yaml
+  - https-redirect.yaml
   - helmrelease.yaml

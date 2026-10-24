@@ -61,6 +61,8 @@ spec:
         class: traefik
         provider: traefik
         configureCertmanager: false
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: gitlab-https-redirect@kubernetescrd
         tls:
           enabled: true
           secretName: gitlab-web-tls

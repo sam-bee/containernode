@@ -210,6 +210,7 @@ Web access was restored on 24 October 2026 after verifying the patched GitLab ve
 `global.ingress.enabled: true` exposes the webservice through Traefik using the `gitlab-web-tls` Secret. Gateway API,
 the registry and KAS remain disabled. To isolate web access during a future security incident, set
 `global.ingress.enabled: false` and keep Gateway API disabled; application components and Git-over-SSH will still run.
+The GitLab ingress references the namespace's `https-redirect` Traefik Middleware to redirect HTTP requests to HTTPS.
 
 GitLab still requires a publicly trusted Let's Encrypt certificate. `gitlab/certificate.sops.yaml` manages
 `gitlab-web-tls` explicitly using the Cloudflare DNS-01 ClusterIssuer, so cert-manager can renew it independently of
