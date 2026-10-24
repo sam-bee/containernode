@@ -1,6 +1,156 @@
 # Maintenance Runbooks
 
 
+## Service version audit and upgrade queue — 24 October 2026
+
+This is a dated inventory, not a floating upgrade policy. Versions were checked against the live cluster, selected
+in-container version commands, official release APIs and the configured Helm repositories. All 35 active pods across
+33 workload controllers were Ready at 21:04 UTC. Host versions below were supplied by the operator; host SSH is not
+available from this workstation. No workload or host version was changed during this audit.
+
+"Latest" means the latest published stable application release unless the row says otherwise. A newer upstream
+release is not automatically an approved target for a bundled component, database or chart dependency. Recheck release
+notes, image availability and digests immediately before implementing each batch.
+
+### Applications and data services
+
+| Service | Installed | Latest | Preparation |
+| --- | --- | --- | --- |
+| GitLab EE | 19.5.1 | [19.5.1](https://docs.gitlab.com/releases/patches/) | Current; web ingress is enabled. |
+| Open WebUI / Chat | 0.11.0 | [0.12.3](https://github.com/open-webui/open-webui/releases/tag/v0.12.3) | Back up its PostgreSQL database and persistent data; review migrations. |
+| OpenClaw | 2026.8.1-beta.2 | [2026.10.7](https://github.com/openclaw/openclaw/releases/tag/v2026.10.7) | Rebuild the node-local image with a supported Node runtime and matching plugins. |
+| Jellyfin | 10.11.11 | [12.3](https://github.com/jellyfin/jellyfin/releases/tag/v12.3) | Major migration; back up config/database, review plugins and allow for a library scan. |
+| Element Web | 1.12.25 | [1.12.32](https://github.com/element-hq/element-web/releases/tag/v1.12.32) | Verify tailnet homeserver discovery and sign-in. |
+| Matrix Synapse | 1.158.0 | [1.163.2](https://github.com/element-hq/synapse/releases/tag/v1.163.2) | Back up its database/media and review intervening upgrade notes. |
+| Monero daemon | 0.18.5.1 | [0.18.5.4](https://github.com/monero-project/monero/releases/tag/v0.18.5.4) | The existing GHCR publisher has a `v0.18.5.4` tag; verify digest and sync health. |
+| Grafana | 13.1.3 | [13.2.4](https://github.com/grafana/grafana/releases/tag/v13.2.4) | Review chart major changes and preserve its database/PVC. |
+| Loki | 3.7.6 | [3.7.9](https://github.com/grafana/loki/releases/tag/v3.7.9) | Review chart major changes; preserve filesystem storage, retained PVC and retention settings. |
+| Alloy | 1.18.1 | [1.21.2](https://github.com/grafana/alloy/releases/tag/v1.21.2) | Render the chart with current Flow configuration and check log delivery. |
+| Garage object storage | 2.3.0 | [2.5.0](https://git.deuxfleurs.fr/Deuxfleurs/garage/releases/tag/v2.5.0) | One-way upgrade; independent recovery copy required. |
+| PostgreSQL for GitLab | 17.11 | [18.6 overall; 17.11 on 17.x](https://www.postgresql.org/support/versioning/) | Current patch on 17.x; a separate GitLab database migration to 18 is now supported. |
+| PostgreSQL for Chat, Grafana and Matrix | 18.6 | [18.6](https://www.postgresql.org/support/versioning/) | Current. PostgreSQL 19 is not yet stable. |
+| Valkey for GitLab | 7.2.14 | [9.1.2 overall](https://github.com/valkey-io/valkey/releases/tag/9.1.2); 7.2.14 on 7.2.x | Current on GitLab's recommended 7.2 line; review compatibility before changing major. |
+| Syncthing | 2.1.3 | [2.1.7](https://github.com/syncthing/syncthing/releases/tag/v2.1.7) | Update the LinuxServer image; preserve tailnet-only listener configuration. |
+| Transmission | 4.1.3 | [4.1.4](https://github.com/transmission/transmission/releases/tag/4.1.4) | Upstream released today; the publisher's latest release still packages 4.1.3. |
+| WireGuard VPN tools | 1.0.20260223 | [1.0.20260223](https://git.zx2c4.com/wireguard-tools/refs/tags) | Tool version is current; the LinuxServer wrapper has updates. |
+
+Jellyfin's `12.3` is the actual upstream version number: the project dropped the leading `10` from its version scheme
+with 12.0. Treat the move from 10.11 as a migration, not a patch-level image replacement.
+
+Garage 2.5 forbids downgrading an upgraded node and changes lifecycle API permissions to require bucket-owner access.
+Review its new `public_endpoint` setting. All three Garage replicas run on this one host. The GitLab native backup
+archive in Garage is not an independent recovery copy for Garage itself; back up object data, metadata and recovery
+configuration off the affected storage and establish a restore procedure before this upgrade.
+
+### Kubernetes and platform components
+
+| Component | Installed | Latest upstream | Upgrade ownership |
+| --- | --- | --- | --- |
+| Kubernetes | 1.37.1 | [1.37.1](https://dl.k8s.io/release/stable.txt) | Current through k3s. |
+| k3s | 1.37.1+k3s1 | [1.37.1+k3s1](https://github.com/k3s-io/k3s/releases/tag/v1.37.1%2Bk3s1) | Current latest release; the stable channel still points at 1.36.5+k3s1. |
+| cert-manager | 1.21.3 | [1.21.3](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.3) | Current; the accepted Kubernetes 1.37 support exception remains. |
+| Flux distribution | 2.9.4 | [2.9.6](https://github.com/fluxcd/flux2/releases/tag/v2.9.6) | Regenerate the existing four controllers with the matching CLI. |
+| Traefik | 3.7.13 | [3.7.16](https://github.com/traefik/traefik/releases/tag/v3.7.16) | Review a declarative k3s HelmChartConfig override and image availability. |
+| CoreDNS | 1.14.7 | [1.15.0](https://github.com/coredns/coredns/releases/tag/v1.15.0) | k3s bundled; review DNS compatibility and packaged-manifest ownership. |
+| metrics-server | 0.9.0 | [0.9.0](https://github.com/kubernetes-sigs/metrics-server/releases/tag/v0.9.0) | Current k3s bundle. |
+| local-path-provisioner | 0.0.37 | [0.0.37](https://github.com/rancher/local-path-provisioner/releases/tag/v0.0.37) | Current; Flux owns it and the host skip marker must remain. |
+| ServiceLB / klipper-lb | 0.4.17 | [0.4.17](https://github.com/k3s-io/klipper-lb/releases/tag/v0.4.17) | Current k3s bundle. |
+| containerd | 2.3.4-k3s1 | [2.4.2](https://github.com/containerd/containerd/releases/tag/v2.4.2) | Embedded runtime; track the k3s bundle rather than replacing the host binary independently. |
+| Flannel | 0.28.4, per k3s release | [0.28.10](https://github.com/flannel-io/flannel/releases/tag/v0.28.10) | Embedded networking; track the k3s bundle and review separately. |
+| k3s Helm controller | 0.17.9, per k3s release | [0.17.9](https://github.com/k3s-io/helm-controller/releases/tag/v0.17.9) | Current; this is separate from Flux's Helm controller. |
+
+Traefik 3.7.16 fixes [GHSA-hrpp-p4fc-wwf8](https://github.com/traefik/traefik/security/advisories/GHSA-hrpp-p4fc-wwf8).
+The installed version is in the affected version range, but this cluster has no ForwardAuth middleware configured,
+which is required for the reported identity-leak scenario. Prioritize the ingress patch without treating that version
+comparison alone as proof the deployment is exploitable.
+
+### Charts, sidecars and custom-image dependencies
+
+| Flux-managed chart | Installed chart | Latest chart | Latest chart application |
+| --- | --- | --- | --- |
+| GitLab | 10.5.1 | [10.5.1](https://charts.gitlab.io/index.yaml) | 19.5.1 |
+| cert-manager | 1.21.3 | [1.21.3](https://charts.jetstack.io/index.yaml) | 1.21.3 |
+| Grafana | 12.10.4 | [14.0.1](https://grafana-community.github.io/helm-charts/index.yaml) | 13.2.4 |
+| Loki | 18.9.0 | [19.2.1](https://grafana-community.github.io/helm-charts/index.yaml) | 3.7.9 |
+| Alloy | 1.11.1 | [1.14.3](https://grafana.github.io/helm-charts/index.yaml) | 1.21.2 |
+
+| Dependency or publisher image | Installed | Latest / target evidence |
+| --- | --- | --- |
+| Flux source-controller | 1.9.4 | 1.9.6 in Flux 2.9.6 |
+| Flux kustomize-controller | 1.9.4 | 1.9.6 in Flux 2.9.6 |
+| Flux helm-controller | 1.6.3 | 1.6.5 in Flux 2.9.6 |
+| Flux notification-controller | 1.9.3 | 1.9.4 in Flux 2.9.6 |
+| GitLab Shell | 14.58.0 | 14.58.0 in the latest GitLab chart; upgrade with that chart. |
+| GitLab Exporter | 17.0.2 | 17.0.2 in the latest GitLab chart; upgrade with that chart. |
+| GitLab Workhorse, Gitaly, Sidekiq, Toolbox, base and certificate images | 19.5.1 | 19.5.1 in the latest GitLab chart. |
+| Loki rules sidecar | 2.10.1 | [2.14.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.14.1); prefer chart-managed dependencies. |
+| Alloy Prometheus config-reloader | 0.93.1 | [0.94.2](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.94.2); prefer chart-managed dependencies. |
+| Syncthing LinuxServer image | v2.1.3-ls227 | [v2.1.7-ls234](https://github.com/linuxserver/docker-syncthing/releases/tag/v2.1.7-ls234) |
+| Transmission LinuxServer image | 4.1.3-r0-ls357 | [4.1.3-r0-ls365](https://github.com/linuxserver/docker-transmission/releases/tag/4.1.3-r0-ls365); does not yet deliver upstream 4.1.4. |
+| WireGuard LinuxServer image | 1.0.20260223-r0-ls120 | [1.0.20260223-r0-ls127](https://github.com/linuxserver/docker-wireguard/releases/tag/1.0.20260223-r0-ls127) |
+| Proton port-forward Python image | 3.14.7-alpine | [3.15.1 overall; 3.14.9 on 3.14](https://www.python.org/downloads/); prefer the 3.14 patch first, after checking the image tag and digest. |
+| OpenClaw Node runtime | 24.16.0 | [26.12.1 Current; 24.22.1 LTS](https://nodejs.org/en/download); use supported LTS for the rebuild. |
+| OpenClaw Matrix plugin | 2026.8.1-beta.2 | [2026.10.7](https://registry.npmjs.org/@openclaw%2Fmatrix/latest) |
+| OpenClaw DeepSeek provider plugin | 2026.8.1-beta.2 | [2026.10.7](https://registry.npmjs.org/@openclaw%2Fdeepseek-provider/latest) |
+| BusyBox init containers | 1.37.0 | [1.38.0, explicitly labelled unstable upstream](https://busybox.net/); review rather than automatically adopting. |
+
+The [OpenClaw 2026.10.7 npm manifest](https://registry.npmjs.org/openclaw/latest) requires Node
+`>=24.22.1 <25 || >=26.12.1`; the installed 24.16.0 does not satisfy it. The deployment uses a digest-pinned
+`localhost/openclaw` image with `imagePullPolicy: Never`. Build and load the replacement on containernode before
+changing its manifest, update both plugin pins, and verify gateway readiness, Matrix messaging, DeepSeek, credentials
+and workspace/skills access. Preserve the existing startup symlink fix.
+
+### Host services
+
+Tailscale is [1.104.2, also the latest stable release](https://github.com/tailscale/tailscale/releases/tag/v1.104.2).
+The node reports Debian 13 (trixie), running kernel `6.12.95+deb13-amd64`.
+[Debian's current point release is 13.7](https://www.debian.org/releases/stable/); the installed point-release package
+and kernel package candidate were not queried. Kernel reboot status is also unverified.
+
+The operator reported these installed versions and equal configured APT candidates. This compares Debian packages,
+including Debian's revisions and backports, rather than unrelated upstream release numbers. The APT lists' last
+refresh time is unknown; refresh them on the host before declaring the OS fully patched.
+
+| Package / service | Installed | Configured APT candidate |
+| --- | --- | --- |
+| openssh-server / SSH | 1:10.0p1-7+deb13u4 | 1:10.0p1-7+deb13u4 |
+| fail2ban | 1.1.0-8 | 1.1.0-8 |
+| nfs-common / nfs-blkmap | 1:2.8.3-1 | 1:2.8.3-1 |
+| rpcbind | 1.2.7-1 | 1.2.7-1 |
+| cron | 3.0pl1-197 | 3.0pl1-197 |
+| dbus | 1.16.2-2 | 1.16.2-2 |
+| systemd | 257.13-1~deb13u1 | 257.13-1~deb13u1 |
+| udev | 257.13-1~deb13u1 | 257.13-1~deb13u1 |
+| login | 1:4.16.0-2+really2.41.5-0+deb13u1 | 1:4.16.0-2+really2.41.5-0+deb13u1 |
+
+The 14 reported running units are `cron`, `dbus`, `fail2ban`, `getty@tty1`, `k3s`, `nfs-blkmap`, `rpcbind`, `ssh`,
+`systemd-journald`, `systemd-logind`, `systemd-timesyncd`, `systemd-udevd`, `tailscaled` and `user@1000`.
+The systemd units are part of OS maintenance, not separate application upgrades. The getty executable's owning package
+was not separately queried. `apt list --upgradable` returned no entries using the host's cached package lists.
+
+### Proposed upgrade batches
+
+1. Prepare independent backups and restore procedures for affected persistent data. Confirm the Proxmox backup
+   completed and covers the mounted application disks. Refresh host APT metadata and check kernel/reboot state.
+2. Patch Flux to 2.9.6 and Traefik to 3.7.16 as separate small changes. Preserve Flux's existing component selection;
+   update `REQUIRED_FLUX_VERSION` in the host k3s helper alongside Flux. Verify reconciliation, DNS and public GitLab
+   HTTP-to-HTTPS redirect and certificate behavior.
+3. Upgrade ordinary applications in small batches: Element, Syncthing, Monero, Synapse and Open WebUI. Complete each
+   application's migration and readiness checks before starting the next stateful change.
+4. Review Grafana chart 12 to 14 and Loki chart 18 to 19 migrations, including current values, post-renderers, PVCs and
+   retained data; upgrade Alloy and chart-owned sidecars with rendered-diff review and log/dashboard checks.
+5. Update Transmission's publisher image, WireGuard wrapper and Python patch together after testing the VPN
+   kill switch, DNS, public egress address, forwarded port and completed-download copy hook. Recheck whether the
+   publisher has delivered Transmission 4.1.4 before choosing the final image.
+6. Rebuild and test OpenClaw with Node 24.22.1 LTS, OpenClaw 2026.10.7 and matching external plugins.
+7. Schedule Jellyfin, Garage and GitLab PostgreSQL major migrations individually. Garage needs a recovery strategy
+   that does not rely on downgrading its binary. PostgreSQL requires a new data directory and migration verification.
+
+Keep Kubernetes, k3s, cert-manager and GitLab at their current pins for this queue. Keep Valkey on the current 7.2
+patch pending a compatibility review. Handle newer upstream CoreDNS, Flannel and containerd through an explicit k3s
+bundle/override decision; do not imperatively replace those managed components just to match a version column.
+
+
 ## Local kubectl access
 
 Some environments already have a default kubeconfig context set up for `containernode`. If `kubectl` falls back to
@@ -224,12 +374,12 @@ are finished or finalized before advancing to the next stop. The October 2026 up
 
 ## PostgreSQL 17 and 18 service split
 
-Two PostgreSQL Deployments intentionally run side by side while application support catches up:
+Two PostgreSQL Deployments intentionally run side by side pending an explicit GitLab database migration:
 
 - `postgres.postgres.svc.cluster.local` runs PostgreSQL 17 and currently contains only GitLab's
-  `gitlabhq_production` database. GitLab 19.x with Helm chart 10.x supports PostgreSQL 17.x, but not PostgreSQL 18.
-  Keep this instance, its `postgres-data` PVC/PV, and its service until GitLab officially supports PostgreSQL 18 and
-  its database has been migrated and verified. See the
+  `gitlabhq_production` database. As verified on 24 October 2026, GitLab 19.x with Helm chart 10.x supports PostgreSQL
+  17.x through 18.x. A migration to PostgreSQL 18 is therefore eligible for planning. Keep this instance, its
+  `postgres-data` PVC/PV, and its service until the database has been migrated and verified. See the
   [GitLab PostgreSQL requirements](https://docs.gitlab.com/install/requirements/#postgresql).
 - `postgres18.postgres.svc.cluster.local` runs PostgreSQL 18 and contains the Chat, Grafana, and Matrix Synapse
   databases. New supported consumers should use this service.
@@ -237,6 +387,10 @@ Two PostgreSQL Deployments intentionally run side by side while application supp
 The two instances have separate data directories and retained PVs. PostgreSQL major versions cannot share a data
 directory, so retiring PostgreSQL 17 requires an explicit GitLab database migration followed by application and
 backup verification; changing the image or service selector is not sufficient.
+Choose the GitLab PostgreSQL 18 target and isolation explicitly rather than automatically moving it onto the existing
+shared instance. Back up and test restoration of the GitLab database and required extensions, migrate into a separate
+data directory, verify application reads/writes and background jobs, then create a fresh successful native backup before
+retiring the PostgreSQL 17 service and storage.
 
 The host-local port `127.0.0.1:5432` and Tailscale Serve service `svc:postgres` currently reach PostgreSQL 17. The
 PostgreSQL 18 service is cluster-internal only.
