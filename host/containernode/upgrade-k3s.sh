@@ -14,17 +14,20 @@ readonly K3S_DATA_DIR="/var/lib/rancher/k3s"
 readonly BACKUP_ROOT="/var/backups/k3s"
 readonly REQUIRED_FLUX_VERSION="v2.9.4"
 readonly REQUIRED_CERT_MANAGER_VERSION="v1.21.3"
+readonly REQUIRED_GITLAB_VERSION="v19.5.1"
 readonly -a UPGRADE_VERSIONS=(
   "v1.34.10+k3s1"
   "v1.35.7+k3s1"
   "v1.36.3+k3s1"
   "v1.36.5+k3s1"
+  "v1.37.1+k3s1"
 )
 declare -Ar K3S_SHA256=(
   ["v1.34.10+k3s1"]="e63a3511b2603fd1436a1ea8d228348a3b47334b45024801d41a8c0e2d22e8c4"
   ["v1.35.7+k3s1"]="5fc25309c53031e0cf03f7ee85f6f60969381ff3649039ffda19e30f5c26947a"
   ["v1.36.3+k3s1"]="2f98a9f8fe5782479ee2d54e70a1b10a7f6fd4cae8d38ed3098452dc6eed76b5"
   ["v1.36.5+k3s1"]="d73847bcd3c5fccef0115b372e2f9a91f3032dc84bbf71518a4617565294d313"
+  ["v1.37.1+k3s1"]="92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0"
 )
 TEMP_DIR=""
 
@@ -126,7 +129,10 @@ require_active_sqlite() {
 
 wait_for_workloads() {
   for _ in $(seq 1 180); do
-    if [[ "$(not_ready_pod_count 2>/dev/null)" == "0" ]]; then
+    if [[ "$(not_ready_pod_count 2>/dev/null)" == "0" ]] \
+      && [[ "$(not_ready_reconciliation_count 2>/dev/null)" == "0" ]] \
+      && [[ "$(kube get certificate gitlab-web-tls -n gitlab \
+        -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)" == "True" ]]; then
       return 0
     fi
     sleep 2
@@ -220,7 +226,7 @@ upgrade_to() {
   wait_for_cluster "${version}" "${node_name}" \
     || die "k3s ${version} did not become ready; inspect: journalctl -u k3s"
   wait_for_workloads \
-    || die "one or more workloads did not recover after installing ${version}"
+    || die "workloads, Flux or the GitLab certificate did not recover after installing ${version}"
 
   printf 'Cluster is healthy on %s.\n' "${version}"
 }
@@ -232,6 +238,11 @@ main() {
   local flux_version
   local cert_manager_version
   local cert_manager_ready
+  local gitlab_version
+  local certificate_ready
+  local certificate_issuing
+  local certificate_expiry
+  local certificate_expiry_epoch
   local backup_dir
   local version
   local -a nodes
@@ -264,7 +275,7 @@ main() {
 
   current_version="$(installed_version)"
   case "${current_version}" in
-    v1.34.*+k3s*|v1.35.*+k3s*|v1.36.*+k3s*) ;;
+    v1.34.*+k3s*|v1.35.*+k3s*|v1.36.*+k3s*|v1.37.*+k3s*) ;;
     *) die "unsupported starting version: ${current_version}" ;;
   esac
 
@@ -274,6 +285,9 @@ main() {
   fi
   version_is_older "${TARGET_VERSION}" "${current_version}" \
     && die "refusing to downgrade from ${current_version} to ${TARGET_VERSION}"
+
+  [[ ! -e /sys/fs/selinux/enforce ]] \
+    || die "SELinux is enabled; review Kubernetes 1.37 volume-labeling changes before using this helper"
 
   mapfile -t nodes < <(kube get nodes -o name)
   [[ "${#nodes[@]}" -eq 1 ]] || die "expected exactly one Kubernetes node"
@@ -302,6 +316,30 @@ main() {
     && "${cert_manager_ready}" == "True" ]] \
     || die "cert-manager ${REQUIRED_CERT_MANAGER_VERSION} must be ready before the upgrade"
 
+  gitlab_version="$(
+    kube get helmrelease gitlab -n gitlab -o jsonpath='{.status.history[0].appVersion}'
+  )"
+  [[ "${gitlab_version}" == "${REQUIRED_GITLAB_VERSION}" ]] \
+    || die "GitLab ${REQUIRED_GITLAB_VERSION} must be installed before the Kubernetes 1.37 upgrade"
+
+  certificate_ready="$(
+    kube get certificate gitlab-web-tls -n gitlab \
+      -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  )"
+  certificate_issuing="$(
+    kube get certificate gitlab-web-tls -n gitlab \
+      -o jsonpath='{.status.conditions[?(@.type=="Issuing")].status}'
+  )"
+  certificate_expiry="$(
+    kube get certificate gitlab-web-tls -n gitlab -o jsonpath='{.status.notAfter}'
+  )"
+  [[ "${certificate_ready}" == "True" && "${certificate_issuing}" != "True" ]] \
+    || die "the GitLab public certificate must be ready and its renewal complete before the upgrade"
+  certificate_expiry_epoch="$(date --date="${certificate_expiry}" +%s)" \
+    || die "could not parse the GitLab certificate expiry"
+  [[ -n "${certificate_expiry}" && "${certificate_expiry_epoch}" -gt "$(($(date +%s) + 30 * 86400))" ]] \
+    || die "renew the GitLab public certificate first; at least 30 days of validity are required"
+
   [[ "$(not_ready_pod_count)" == "0" ]] \
     || die "one or more pods are not ready before the upgrade"
   [[ "$(not_ready_reconciliation_count)" == "0" ]] \
@@ -316,6 +354,8 @@ main() {
 
   printf 'Preflight passed: %s -> %s; workloads and Flux are healthy; SQLite, token and skip marker exist.\n' \
     "${current_version}" "${TARGET_VERSION}"
+  printf 'GitLab %s is installed; its public certificate is valid through %s.\n' \
+    "${gitlab_version}" "${certificate_expiry}"
 
   TEMP_DIR="$(mktemp -d)"
   trap 'rm -rf -- "${TEMP_DIR}"' EXIT

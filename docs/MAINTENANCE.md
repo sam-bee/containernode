@@ -74,19 +74,28 @@ The token needs read permissions on this repository only, and no other privilege
 The manually applied k3s target for `containernode` is pinned in `host/containernode/k3s-version`. The upgrade helper
 is specific to this single-node amd64 server and its SQLite datastore. It does not float on a release channel.
 
-The next target is `v1.36.5+k3s1`, the stable-channel patch release checked on 24 October 2026. Kubernetes 1.37 is a
-separate step: first bring GitLab to a supported release (the published minimum for 1.37 is GitLab 19.5) and wait for
-cert-manager to explicitly support 1.37; cert-manager 1.21 currently documents support through 1.36.
-Recheck the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/) and
-[cert-manager support table](https://cert-manager.io/docs/releases/) before scheduling that minor upgrade.
+The next target is `v1.37.1+k3s1`, the latest-channel release checked on 24 October 2026, from the healthy
+`v1.36.5+k3s1` installation. GitLab is already on `19.5.1`, satisfying its published minimum of 19.5 for Kubernetes 1.37.
+The operator explicitly accepted running cert-manager `1.21.3` outside its published Kubernetes support range on
+24 October 2026. Its supported/tested range currently stops at 1.36; this is an accepted compatibility risk, not a
+claim of upstream support. The chart allows 1.37 and renders the same resources as for 1.36, but runtime behavior
+still needs verification after the upgrade. See the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/)
+and [cert-manager support table](https://cert-manager.io/docs/releases/).
 
 cert-manager is pinned to `v1.21.3`, including its CRDs, through the Flux HelmRelease. The k3s helper requires that
 version to be ready. This patch includes certificate issuance and security fixes but does not extend the published
 Kubernetes support range; see the [1.21.3 release notes](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.3).
 
-Before changing the target, update Flux and cluster add-ons such as cert-manager to releases that support the target
-Kubernetes minor. Regenerate `clusters/containernode/flux-system/gotk-components.yaml` with the updated Flux CLI.
-Kubernetes control planes must not skip minor versions.
+For future target changes, review Flux and add-on compatibility and record any accepted support exceptions.
+If updating Flux, regenerate `clusters/containernode/flux-system/gotk-components.yaml` with the matching Flux CLI.
+Kubernetes control planes must not skip minor versions. Review the
+[Kubernetes 1.37 urgent upgrade notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.37.md#urgent-upgrade-notes).
+The current cluster has no enabled `scheduling.k8s.io/v1alpha2` API and uses `eventRecordQPS: 50`. The host helper
+refuses SELinux-enabled hosts pending review of the 1.37 volume-labeling change.
+
+GitLab's public certificate was renewed successfully through Cloudflare DNS-01 before preparing this target. It now
+expires on 22 January 2027. An encrypted recovery copy of the renewed certificate and private key is stored off-node.
+The helper requires GitLab `19.5.1` and a Ready certificate with no renewal in progress and at least 30 days of validity.
 
 From an up-to-date repository checkout on `containernode`, run the preparation check first:
 
@@ -96,7 +105,7 @@ sudo host/containernode/upgrade-k3s.sh --check
 
 This checks workload and Flux readiness, refuses suspended reconciliations, verifies the SQLite datastore and server
 token exist, confirms the running k3s process has that SQLite database open, checks the local-storage skip marker and
-service files, and downloads and verifies the required release
+service files, verifies the GitLab version and public certificate, and downloads and verifies the required release
 binaries. It does not stop k3s, take a backup, install a binary, or print credentials. Check available space and mounted
 application storage on the host as well. Ensure application backups and a protected off-node recovery copy are available;
 the helper's Kubernetes datastore backup does not back up application volumes.
@@ -122,6 +131,8 @@ sudo host/containernode/upgrade-k3s.sh
 The helper refuses to start unless Flux and every running workload are healthy. It downloads and verifies each pinned
 k3s binary before making changes, creates an offline SQLite and server-token backup under `/var/backups/k3s`, then
 restarts k3s once per required version step. Workload containers remain running during the brief API-server outages.
+This follows the [manual k3s binary upgrade procedure](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary).
+The helper waits for workload readiness, Flux reconciliation and GitLab certificate readiness after each version step.
 
 Verify the final state:
 
@@ -130,7 +141,12 @@ k3s --version
 kubectl get nodes
 kubectl get pods --all-namespaces
 flux check
+kubectl -n cert-manager get deployments
+kubectl -n gitlab get certificate gitlab-web-tls
 ```
+
+Verify cert-manager webhook admission and fresh certificate issuance after the 1.37 upgrade; the existing GitLab
+certificate staying Ready alone does not prove that new issuance or renewal works on the new Kubernetes version.
 
 Do not roll back by replacing only the binary after a minor-version upgrade. Use the matching pre-upgrade database,
 token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
