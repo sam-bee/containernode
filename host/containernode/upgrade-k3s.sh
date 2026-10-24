@@ -13,7 +13,7 @@ readonly K3S_BINARY="/usr/local/bin/k3s"
 readonly K3S_DATA_DIR="/var/lib/rancher/k3s"
 readonly BACKUP_ROOT="/var/backups/k3s"
 readonly REQUIRED_FLUX_VERSION="v2.9.4"
-readonly REQUIRED_CERT_MANAGER_VERSION="v1.21.1"
+readonly REQUIRED_CERT_MANAGER_VERSION="v1.21.3"
 readonly -a UPGRADE_VERSIONS=(
   "v1.34.10+k3s1"
   "v1.35.7+k3s1"

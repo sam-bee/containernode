@@ -80,6 +80,10 @@ cert-manager to explicitly support 1.37; cert-manager 1.21 currently documents s
 Recheck the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/) and
 [cert-manager support table](https://cert-manager.io/docs/releases/) before scheduling that minor upgrade.
 
+cert-manager is pinned to `v1.21.3`, including its CRDs, through the Flux HelmRelease. The k3s helper requires that
+version to be ready. This patch includes certificate issuance and security fixes but does not extend the published
+Kubernetes support range; see the [1.21.3 release notes](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.3).
+
 Before changing the target, update Flux and cluster add-ons such as cert-manager to releases that support the target
 Kubernetes minor. Regenerate `clusters/containernode/flux-system/gotk-components.yaml` with the updated Flux CLI.
 Kubernetes control planes must not skip minor versions.
