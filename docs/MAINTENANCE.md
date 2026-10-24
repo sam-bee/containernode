@@ -74,12 +74,13 @@ The token needs read permissions on this repository only, and no other privilege
 The manually applied k3s target for `containernode` is pinned in `host/containernode/k3s-version`. The upgrade helper
 is specific to this single-node amd64 server and its SQLite datastore. It does not float on a release channel.
 
-The next target is `v1.37.1+k3s1`, the latest-channel release checked on 24 October 2026, from the healthy
-`v1.36.5+k3s1` installation. GitLab is already on `19.5.1`, satisfying its published minimum of 19.5 for Kubernetes 1.37.
+The current target is `v1.37.1+k3s1`, installed on 24 October 2026 from the healthy `v1.36.5+k3s1` installation.
+The matching pre-upgrade backup is `/var/backups/k3s/pre-upgrade-v1.36.5+k3s1-20261024T191159Z` on the host.
+GitLab is on `19.5.1`, satisfying its published minimum of 19.5 for Kubernetes 1.37.
 The operator explicitly accepted running cert-manager `1.21.3` outside its published Kubernetes support range on
 24 October 2026. Its supported/tested range currently stops at 1.36; this is an accepted compatibility risk, not a
-claim of upstream support. The chart allows 1.37 and renders the same resources as for 1.36, but runtime behavior
-still needs verification after the upgrade. See the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/)
+claim of upstream support. The chart allows 1.37 and renders the same resources as for 1.36; verify runtime behavior
+after each upgrade. See the [GitLab Kubernetes support table](https://docs.gitlab.com/charts/installation/cloud/)
 and [cert-manager support table](https://cert-manager.io/docs/releases/).
 
 cert-manager is pinned to `v1.21.3`, including its CRDs, through the Flux HelmRelease. The k3s helper requires that
@@ -147,6 +148,14 @@ kubectl -n gitlab get certificate gitlab-web-tls
 
 Verify cert-manager webhook admission and fresh certificate issuance after the 1.37 upgrade; the existing GitLab
 certificate staying Ready alone does not prove that new issuance or renewal works on the new Kubernetes version.
+
+Post-upgrade verification on 24 October 2026 passed on `v1.37.1+k3s1` with cert-manager `v1.21.3`: all 35 active pods
+and Flux reconciliations were healthy, all 23 PVs and PVCs were Bound, and GitLab's internal health and full readiness
+checks returned HTTP 200. A temporary Let's Encrypt staging Certificate successfully completed Cloudflare DNS-01
+issuance and forced renewal with private-key rotation; certificate/key matching and webhook validation also passed.
+All temporary test resources and account keys were removed. GitLab's production certificate was unchanged by these
+tests, web ingress remains disabled, and Jellyfin remains Tailscale only. These checks validate this deployment and
+do not extend cert-manager's upstream support matrix.
 
 Do not roll back by replacing only the binary after a minor-version upgrade. Use the matching pre-upgrade database,
 token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
