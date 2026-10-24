@@ -6,11 +6,18 @@
 This is a dated inventory, not a floating upgrade policy. Versions were checked against the live cluster, selected
 in-container version commands, official release APIs and the configured Helm repositories. All 35 active pods across
 33 workload controllers were Ready at 21:04 UTC. Host versions below were supplied by the operator; host SSH is not
-available from this workstation. No workload or host version was changed during this audit.
+available from this workstation. The inventory below includes the Flux and Traefik updates completed after the audit.
 
 "Latest" means the latest published stable application release unless the row says otherwise. A newer upstream
 release is not automatically an approved target for a bundled component, database or chart dependency. Recheck release
 notes, image availability and digests immediately before implementing each batch.
+
+Completed after the audit: Flux `2.9.4 -> 2.9.6` and Traefik `3.7.13 -> 3.7.16`, as separate GitOps changes on
+24 October 2026. Flux retained the same four controllers, and the host k3s helper's required Flux version was updated.
+Traefik retained the existing packaged chart with a digest-pinned image override. Post-upgrade checks passed: all 35
+active pods Ready, all 20 Flux resources Ready and unsuspended, all 23 PVs/PVCs Bound, Flux controller/CRD checks,
+GitLab's full internal readiness, public HTTPS sign-in, and HTTP-to-HTTPS redirection. The public certificate remains
+valid through 22 January 2027. The temporary image preflight pod was removed.
 
 ### Applications and data services
 
@@ -49,8 +56,8 @@ configuration off the affected storage and establish a restore procedure before 
 | Kubernetes | 1.37.1 | [1.37.1](https://dl.k8s.io/release/stable.txt) | Current through k3s. |
 | k3s | 1.37.1+k3s1 | [1.37.1+k3s1](https://github.com/k3s-io/k3s/releases/tag/v1.37.1%2Bk3s1) | Current latest release; the stable channel still points at 1.36.5+k3s1. |
 | cert-manager | 1.21.3 | [1.21.3](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.3) | Current; the accepted Kubernetes 1.37 support exception remains. |
-| Flux distribution | 2.9.4 | [2.9.6](https://github.com/fluxcd/flux2/releases/tag/v2.9.6) | Regenerate the existing four controllers with the matching CLI. |
-| Traefik | 3.7.13 | [3.7.16](https://github.com/traefik/traefik/releases/tag/v3.7.16) | Review a declarative k3s HelmChartConfig override and image availability. |
+| Flux distribution | 2.9.6 | [2.9.6](https://github.com/fluxcd/flux2/releases/tag/v2.9.6) | Current; regenerated the existing four controllers with the matching CLI. |
+| Traefik | 3.7.16 | [3.7.16](https://github.com/traefik/traefik/releases/tag/v3.7.16) | Current; digest-pinned k3s HelmChartConfig image override. |
 | CoreDNS | 1.14.7 | [1.15.0](https://github.com/coredns/coredns/releases/tag/v1.15.0) | k3s bundled; review DNS compatibility and packaged-manifest ownership. |
 | metrics-server | 0.9.0 | [0.9.0](https://github.com/kubernetes-sigs/metrics-server/releases/tag/v0.9.0) | Current k3s bundle. |
 | local-path-provisioner | 0.0.37 | [0.0.37](https://github.com/rancher/local-path-provisioner/releases/tag/v0.0.37) | Current; Flux owns it and the host skip marker must remain. |
@@ -60,9 +67,9 @@ configuration off the affected storage and establish a restore procedure before 
 | k3s Helm controller | 0.17.9, per k3s release | [0.17.9](https://github.com/k3s-io/helm-controller/releases/tag/v0.17.9) | Current; this is separate from Flux's Helm controller. |
 
 Traefik 3.7.16 fixes [GHSA-hrpp-p4fc-wwf8](https://github.com/traefik/traefik/security/advisories/GHSA-hrpp-p4fc-wwf8).
-The installed version is in the affected version range, but this cluster has no ForwardAuth middleware configured,
-which is required for the reported identity-leak scenario. Prioritize the ingress patch without treating that version
-comparison alone as proof the deployment is exploitable.
+The patch is installed through `infrastructure/containernode/traefik/helmchartconfig.yaml`. Review or remove this image
+override when a future k3s release packages a newer Traefik version, so it does not hold the deployment on an older
+patch. The cluster currently has no ForwardAuth middleware configured.
 
 ### Charts, sidecars and custom-image dependencies
 
@@ -76,10 +83,10 @@ comparison alone as proof the deployment is exploitable.
 
 | Dependency or publisher image | Installed | Latest / target evidence |
 | --- | --- | --- |
-| Flux source-controller | 1.9.4 | 1.9.6 in Flux 2.9.6 |
-| Flux kustomize-controller | 1.9.4 | 1.9.6 in Flux 2.9.6 |
-| Flux helm-controller | 1.6.3 | 1.6.5 in Flux 2.9.6 |
-| Flux notification-controller | 1.9.3 | 1.9.4 in Flux 2.9.6 |
+| Flux source-controller | 1.9.6 | 1.9.6 in Flux 2.9.6 |
+| Flux kustomize-controller | 1.9.6 | 1.9.6 in Flux 2.9.6 |
+| Flux helm-controller | 1.6.5 | 1.6.5 in Flux 2.9.6 |
+| Flux notification-controller | 1.9.4 | 1.9.4 in Flux 2.9.6 |
 | GitLab Shell | 14.58.0 | 14.58.0 in the latest GitLab chart; upgrade with that chart. |
 | GitLab Exporter | 17.0.2 | 17.0.2 in the latest GitLab chart; upgrade with that chart. |
 | GitLab Workhorse, Gitaly, Sidekiq, Toolbox, base and certificate images | 19.5.1 | 19.5.1 in the latest GitLab chart. |
@@ -132,9 +139,8 @@ was not separately queried. `apt list --upgradable` returned no entries using th
 
 1. Prepare independent backups and restore procedures for affected persistent data. Confirm the Proxmox backup
    completed and covers the mounted application disks. Refresh host APT metadata and check kernel/reboot state.
-2. Patch Flux to 2.9.6 and Traefik to 3.7.16 as separate small changes. Preserve Flux's existing component selection;
-   update `REQUIRED_FLUX_VERSION` in the host k3s helper alongside Flux. Verify reconciliation, DNS and public GitLab
-   HTTP-to-HTTPS redirect and certificate behavior.
+2. Completed: Flux 2.9.6 and Traefik 3.7.16, preserving Flux's component selection and updating
+   `REQUIRED_FLUX_VERSION` in the host k3s helper. Reconciliation and public GitLab redirect/certificate checks passed.
 3. Upgrade ordinary applications in small batches: Element, Syncthing, Monero, Synapse and Open WebUI. Complete each
    application's migration and readiness checks before starting the next stateful change.
 4. Review Grafana chart 12 to 14 and Loki chart 18 to 19 migrations, including current values, post-renderers, PVCs and
