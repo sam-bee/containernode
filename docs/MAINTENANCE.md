@@ -120,8 +120,8 @@ cover the application data under `/mnt/userdata-clusterfiles`, `/mnt/twindrives-
 Data outside the included virtual disks needs a separate backup. For a live backup, confirm the guest-agent filesystem
 freeze/thaw succeeds; a live VM backup is not equivalent to an application-native database backup.
 
-GitLab's web ingress remains intentionally disabled while its security upgrade is validated. Preserve that isolation
-during k3s maintenance. The published minimum for Kubernetes 1.37 is GitLab 19.5.
+GitLab's web ingress and public certificate are managed through Flux. Preserve their declared settings during k3s
+maintenance. The published minimum for Kubernetes 1.37 is GitLab 19.5.
 
 During the agreed maintenance window, run:
 
@@ -154,8 +154,8 @@ and Flux reconciliations were healthy, all 23 PVs and PVCs were Bound, and GitLa
 checks returned HTTP 200. A temporary Let's Encrypt staging Certificate successfully completed Cloudflare DNS-01
 issuance and forced renewal with private-key rotation; certificate/key matching and webhook validation also passed.
 All temporary test resources and account keys were removed. GitLab's production certificate was unchanged by these
-tests, web ingress remains disabled, and Jellyfin remains Tailscale only. These checks validate this deployment and
-do not extend cert-manager's upstream support matrix.
+tests. Web ingress was disabled during these checks, and Jellyfin remains Tailscale only. These checks validate this
+deployment and do not extend cert-manager's upstream support matrix.
 
 Do not roll back by replacing only the binary after a minor-version upgrade. Use the matching pre-upgrade database,
 token, configuration, service unit, and binary from `/var/backups/k3s` and follow the upstream k3s rollback procedure.
@@ -206,14 +206,15 @@ GitLab is pinned to chart `10.5.1` / GitLab `19.5.1`, the latest stable release 
 the critical CVE-2026-110264 fix. Recheck the [GitLab patch release notes](https://docs.gitlab.com/releases/patches/)
 and [chart version mappings](https://docs.gitlab.com/charts/installation/version_mappings/) before future upgrades.
 
-Web access remains intentionally disabled with `global.ingress.enabled: false` and `global.gatewayApi.enabled: false`.
-The registry and KAS are also disabled. The application components and Git-over-SSH service still run; this is web
-ingress isolation, not a shutdown of the namespace. Keep these settings when changing the chart version.
+Web access was restored on 24 October 2026 after verifying the patched GitLab version and the Kubernetes upgrade.
+`global.ingress.enabled: true` exposes the webservice through Traefik using the `gitlab-web-tls` Secret. Gateway API,
+the registry and KAS remain disabled. To isolate web access during a future security incident, set
+`global.ingress.enabled: false` and keep Gateway API disabled; application components and Git-over-SSH will still run.
 
 GitLab still requires a publicly trusted Let's Encrypt certificate. `gitlab/certificate.sops.yaml` manages
-`gitlab-web-tls` explicitly using the Cloudflare DNS-01 ClusterIssuer, so cert-manager can renew it while web ingress
-is disabled. Keep certificate ownership in this manifest and leave the ingress issuer annotation unset when restoring
-web access. Jellyfin currently uses Tailscale Serve HTTPS and has no cert-manager Certificate resource.
+`gitlab-web-tls` explicitly using the Cloudflare DNS-01 ClusterIssuer, so cert-manager can renew it independently of
+web ingress state. Keep certificate ownership in this manifest and leave the ingress issuer annotation unset.
+Jellyfin currently uses Tailscale Serve HTTPS and has no cert-manager Certificate resource.
 
 Before an upgrade, create a native backup from the Toolbox pod with `backup-utility`, verify the resulting archive in
 the configured backup bucket, and save the Kubernetes secrets in a separate encrypted recovery copy. The native backup
