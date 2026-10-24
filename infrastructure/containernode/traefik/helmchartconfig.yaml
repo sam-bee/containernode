@@ -5,6 +5,9 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
+    image:
+      tag: "3.7.16"
+      digest: "sha256:6d3e069ee484ab1da5adfdda555a75eb9b1545ef09096a0cc7c3043101986a20"
     service:
       spec:
         externalTrafficPolicy: Local
