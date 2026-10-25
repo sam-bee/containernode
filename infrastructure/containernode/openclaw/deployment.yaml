@@ -98,8 +98,11 @@ spec:
             - -ec
           args:
             - |
-              if [ -f /home/node/.openclaw/state/openclaw.sqlite ]; then
+              state_db=/home/node/.openclaw/state/openclaw.sqlite
+              doctor_marker=/home/node/.openclaw/.doctor-2026.10.7
+              if [ -f "${state_db}" ] && [ ! -f "${doctor_marker}" ]; then
                 openclaw doctor --fix --non-interactive --yes
+                touch "${doctor_marker}"
               fi
 
               matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
