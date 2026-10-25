@@ -54,7 +54,7 @@ spec:
               mountPath: /data
       containers:
         - name: valkey
-          image: valkey/valkey:7.2.14
+          image: valkey/valkey:9.1.2@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd
           imagePullPolicy: IfNotPresent
           command:
             - sh
