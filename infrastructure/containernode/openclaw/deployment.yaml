@@ -106,16 +106,15 @@ spec:
               schema_marker=/home/node/.openclaw/.state-schema-2026.10.7
               session_marker=/home/node/.openclaw/.session-sqlite-validate-2026.10.7
               plugin_marker=/home/node/.openclaw/.plugins-2026.10.7
-              journal_marker=/home/node/.openclaw/.agent-journal-delete-2026.10.7
               private_tmp=/home/node/.openclaw/.tmp
               mkdir -p "${private_tmp}"
               chmod 700 "${private_tmp}"
 
-              if [ ! -f "${journal_marker}" ]; then
-                OPENCLAW_STATE_DIR=/home/node/.openclaw node --experimental-sqlite -e '
+              OPENCLAW_STATE_DIR=/home/node/.openclaw node --experimental-sqlite -e '
                   const fs = require("node:fs");
                   const { DatabaseSync } = require("node:sqlite");
                   const stateDir = process.env.OPENCLAW_STATE_DIR;
+                  if (Number(fs.statfsSync(stateDir).type) !== 0x65735546) process.exit(0);
                   const agentIds = ["default", "grok-number1", "personal", "3-8"];
                   for (const agentId of agentIds) {
                     const pathname = `${stateDir}/agents/${agentId}/agent/openclaw-agent.sqlite`;
@@ -135,8 +134,6 @@ spec:
                     }
                   }
                 '
-                touch "${journal_marker}"
-              fi
 
               plugins_match() {
                 openclaw plugins list --json > "${private_tmp}/plugins.json" 2>/dev/null
