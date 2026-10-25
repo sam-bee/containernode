@@ -221,6 +221,8 @@ spec:
               value: /home/node/.openclaw/.tmp
             - name: SQLITE_TMPDIR
               value: /home/node/.openclaw/.tmp
+            - name: NODE_OPTIONS
+              value: --import=/diagnostics/sqlite-trace.mjs
             - name: OPENCLAW_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -277,6 +279,9 @@ spec:
             - name: tmp
               mountPath: /tmp
               subPath: openclaw-private
+            - name: sqlite-trace
+              mountPath: /diagnostics
+              readOnly: true
       containers:
         - name: gateway
           image: ghcr.io/openclaw/openclaw:2026.10.7@sha256:fb26f0841659dc757f23feec9adeab51f11d76779a409db5d22e191b43841afa
@@ -314,6 +319,8 @@ spec:
               value: /home/node/.openclaw/.tmp
             - name: SQLITE_TMPDIR
               value: /home/node/.openclaw/.tmp
+            - name: NODE_OPTIONS
+              value: --import=/diagnostics/sqlite-trace.mjs
             - name: OPENCLAW_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -400,6 +407,9 @@ spec:
             - name: tmp
               mountPath: /tmp
               subPath: openclaw-private
+            - name: sqlite-trace
+              mountPath: /diagnostics
+              readOnly: true
       volumes:
         - name: home
           persistentVolumeClaim:
@@ -447,3 +457,6 @@ spec:
           emptyDir: {}
         - name: cache
           emptyDir: {}
+        - name: sqlite-trace
+          configMap:
+            name: openclaw-sqlite-trace
