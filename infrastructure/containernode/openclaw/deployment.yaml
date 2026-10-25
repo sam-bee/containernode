@@ -103,7 +103,8 @@ spec:
           args:
             - |
               state_db=/home/node/.openclaw/state/openclaw.sqlite
-              doctor_marker=/home/node/.openclaw/.doctor-2026.10.7
+              schema_marker=/home/node/.openclaw/.state-schema-2026.10.7
+              session_marker=/home/node/.openclaw/.session-sqlite-validate-2026.10.7
               private_tmp=/home/node/.openclaw/.tmp
               mkdir -p "${private_tmp}"
               chmod 700 "${private_tmp}"
@@ -126,7 +127,7 @@ spec:
                 fi
               fi
 
-              if [ -f "${state_db}" ] && [ ! -f "${doctor_marker}" ]; then
+              if [ -f "${state_db}" ] && [ ! -f "${schema_marker}" ]; then
                 STATE_DB="${state_db}" node --experimental-sqlite -e '
                   const { DatabaseSync } = require("node:sqlite");
                   const db = new DatabaseSync(process.env.STATE_DB);
@@ -182,8 +183,13 @@ spec:
                   }
                   db.close();
                 '
-                openclaw doctor --fix --force --non-interactive --yes
-                touch "${doctor_marker}"
+                touch "${schema_marker}"
+              fi
+
+              if [ ! -f "${session_marker}" ]; then
+                openclaw doctor --session-sqlite inspect --session-sqlite-all-agents --non-interactive
+                openclaw doctor --session-sqlite validate --session-sqlite-all-agents --non-interactive
+                touch "${session_marker}"
               fi
           env:
             - name: HOME
