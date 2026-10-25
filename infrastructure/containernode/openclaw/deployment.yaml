@@ -35,7 +35,9 @@ spec:
                 /home/node/.openclaw/workspace \
                 /home/node/.openclaw/workspace-grok-number1/skills/playwright-cli \
                 /home/node/.openclaw/workspace-personal \
-                /home/node/.openclaw/workspace-3-8
+                /home/node/.openclaw/workspace-3-8 \
+                /tmp-root/openclaw-private
+              chmod 700 /tmp-root/openclaw-private
               cp /config/openclaw.json /home/node/.openclaw/openclaw.json
               cp /config/AGENTS.md /home/node/.openclaw/workspace/AGENTS.md
               cp /prompt-grok-number1/AGENTS.md /home/node/.openclaw/workspace-grok-number1/AGENTS.md
@@ -90,6 +92,8 @@ spec:
               readOnly: true
             - name: research-media-path-compat
               mountPath: /research-media-path-compat
+            - name: tmp
+              mountPath: /tmp-root
         - name: install-external-plugins
           image: ghcr.io/openclaw/openclaw:2026.10.7@sha256:fb26f0841659dc757f23feec9adeab51f11d76779a409db5d22e191b43841afa
           imagePullPolicy: IfNotPresent
@@ -255,6 +259,7 @@ spec:
               mountPath: /home/node/.cache
             - name: tmp
               mountPath: /tmp
+              subPath: openclaw-private
       containers:
         - name: gateway
           image: ghcr.io/openclaw/openclaw:2026.10.7@sha256:fb26f0841659dc757f23feec9adeab51f11d76779a409db5d22e191b43841afa
@@ -369,6 +374,7 @@ spec:
               readOnly: true
             - name: tmp
               mountPath: /tmp
+              subPath: openclaw-private
       volumes:
         - name: home
           persistentVolumeClaim:
