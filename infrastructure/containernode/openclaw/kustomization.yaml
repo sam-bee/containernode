@@ -46,7 +46,3 @@ configMapGenerator:
       - test-generation.md=agent-content/grok-number1/skills/playwright-cli/references/test-generation.md
       - tracing.md=agent-content/grok-number1/skills/playwright-cli/references/tracing.md
       - video-recording.md=agent-content/grok-number1/skills/playwright-cli/references/video-recording.md
-  - name: openclaw-sqlite-trace
-    namespace: openclaw
-    files:
-      - sqlite-trace.mjs=image/sqlite-trace.mjs
