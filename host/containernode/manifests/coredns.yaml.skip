@@ -1,0 +1,2 @@
+# Prevent K3s from reapplying its bundled CoreDNS manifest. Flux owns the
+# replacement resources under infrastructure/containernode/coredns.
