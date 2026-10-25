@@ -176,6 +176,8 @@ spec:
           volumeMounts:
             - name: home
               mountPath: /home/node/.openclaw
+            - name: cache
+              mountPath: /home/node/.cache
             - name: tmp
               mountPath: /tmp
       containers:
@@ -274,6 +276,8 @@ spec:
           volumeMounts:
             - name: home
               mountPath: /home/node/.openclaw
+            - name: cache
+              mountPath: /home/node/.cache
             - name: research-playwright-media
               mountPath: /home/node/.openclaw/workspace-grok-number1/research-playwright-media
               readOnly: true
@@ -326,4 +330,6 @@ spec:
         - name: research-media-path-compat
           emptyDir: {}
         - name: tmp
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
