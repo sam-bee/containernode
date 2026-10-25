@@ -27,22 +27,6 @@ function wrapSyncMethod(prototype, method) {
   function wrapped(...args) {
     try {
       const result = original.apply(this, args);
-      if (method === "iterate" && result && typeof result.next === "function") {
-        const next = result.next.bind(result);
-        return new Proxy(result, {
-          get(target, property, receiver) {
-            if (property !== "next") return Reflect.get(target, property, receiver);
-            return (...nextArgs) => {
-              try {
-                return next(...nextArgs);
-              } catch (error) {
-                trace(method, error);
-                throw error;
-              }
-            };
-          },
-        });
-      }
       return result;
     } catch (error) {
       trace(method, error);
