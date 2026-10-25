@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastTouchedVersion": "2026.8.1-beta.2"
+    "lastTouchedVersion": "2026.10.7"
   },
   "gateway": {
     "mode": "local",
@@ -97,21 +97,25 @@
     }
   },
   "agents": {
+    "ownership": "explicit",
     "defaults": {
       "workspace": "~/.openclaw/workspace",
+      "systemAgent": {
+        "agentId": "default"
+      },
+      "sessionStore": {
+        "agentId": "default"
+      },
       "model": {
         "primary": "openai/gpt-5.6-sol"
       }
     },
-    "list": [
-      {
-        "id": "default",
-        "default": true,
+    "entries": {
+      "default": {
         "name": "Codex (OpenClaw)",
         "workspace": "~/.openclaw/workspace"
       },
-      {
-        "id": "grok-number1",
+      "grok-number1": {
         "name": "grok-number1",
         "description": "Experimental Grok-backed security-research assistant",
         "workspace": "~/.openclaw/workspace-grok-number1",
@@ -136,8 +140,7 @@
           }
         }
       },
-      {
-        "id": "personal",
+      "personal": {
         "name": "personal",
         "description": "Private DeepSeek-backed personal assistant",
         "workspace": "~/.openclaw/workspace-personal",
@@ -149,8 +152,7 @@
           "allow": []
         }
       },
-      {
-        "id": "3-8",
+      "3-8": {
         "name": "3-8",
         "description": "Private Qwen-backed personal-diary assistant",
         "workspace": "~/.openclaw/workspace-3-8",
@@ -162,7 +164,10 @@
           "allow": []
         }
       }
-    ]
+    }
+  },
+  "talk": {
+    "agentId": "default"
   },
   "bindings": [
     {
@@ -199,11 +204,6 @@
     }
   ],
   "plugins": {
-    "load": {
-      "paths": [
-        "/app/node_modules/@openclaw/codex"
-      ]
-    },
     "allow": [
       "codex",
       "deepseek",

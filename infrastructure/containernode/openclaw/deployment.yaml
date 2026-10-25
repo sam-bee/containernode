@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-        openclaw.sambee.co/config-revision: "2026-08-16-external-agent-content-v1"
+        openclaw.sambee.co/config-revision: "2026-10-25-official-image-v1"
       labels:
         app: openclaw
     spec:
@@ -91,21 +91,21 @@ spec:
             - name: research-media-path-compat
               mountPath: /research-media-path-compat
         - name: install-external-plugins
-          image: localhost/openclaw:2026.8.1-beta.2-npm.3@sha256:10999c2b567e0134baf9a8e766f106b5b8f389901b60cd46c7517925f839e422
-          imagePullPolicy: Never
+          image: ghcr.io/openclaw/openclaw:2026.10.7@sha256:fb26f0841659dc757f23feec9adeab51f11d76779a409db5d22e191b43841afa
+          imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -ec
           args:
             - |
               matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.8.1-beta.2"' "${matrix_manifest}"; }; then
-                openclaw plugins install '@openclaw/matrix@2026.8.1-beta.2' --pin --force
+              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.10.7"' "${matrix_manifest}"; }; then
+                openclaw plugins install '@openclaw/matrix@2026.10.7' --pin --force
               fi
 
               deepseek_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/deepseek-provider/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.8.1-beta.2"' "${deepseek_manifest}"; }; then
-                openclaw plugins install '@openclaw/deepseek-provider@2026.8.1-beta.2' --pin --force
+              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.10.7"' "${deepseek_manifest}"; }; then
+                openclaw plugins install '@openclaw/deepseek-provider@2026.10.7' --pin --force
               fi
           env:
             - name: HOME
@@ -173,13 +173,8 @@ spec:
               mountPath: /tmp
       containers:
         - name: gateway
-          image: localhost/openclaw:2026.8.1-beta.2-npm.3@sha256:10999c2b567e0134baf9a8e766f106b5b8f389901b60cd46c7517925f839e422
-          imagePullPolicy: Never
-          command:
-            - node
-            - /app/dist/index.js
-            - gateway
-            - run
+          image: ghcr.io/openclaw/openclaw:2026.10.7@sha256:fb26f0841659dc757f23feec9adeab51f11d76779a409db5d22e191b43841afa
+          imagePullPolicy: IfNotPresent
           env:
             - name: HOME
               value: /home/node
