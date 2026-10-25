@@ -104,6 +104,7 @@ data:
     s3_region = "garage"
     api_bind_addr = "[::]:3900"
     root_domain = ".s3.gitlab-garage.gitlab.svc.cluster.local"
+    public_endpoint = "http://gitlab-garage.gitlab.svc.cluster.local:3900"
 
     [s3_web]
     bind_addr = "[::]:3902"
@@ -221,7 +222,7 @@ spec:
               mountPath: /config
       containers:
         - name: garage
-          image: dxflrs/amd64_garage:v2.3.0
+          image: dxflrs/amd64_garage:v2.5.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: s3-api
