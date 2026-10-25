@@ -104,6 +104,42 @@ spec:
                 STATE_DB="${state_db}" node --experimental-sqlite -e '
                   const { DatabaseSync } = require("node:sqlite");
                   const db = new DatabaseSync(process.env.STATE_DB);
+                  db.exec(`
+                    CREATE TABLE IF NOT EXISTS user_profiles (
+                      id TEXT NOT NULL PRIMARY KEY,
+                      display_name TEXT,
+                      primary_github_account_id INTEGER,
+                      avatar BLOB,
+                      avatar_mime TEXT,
+                      avatar_sha256 TEXT,
+                      merged_into TEXT,
+                      role TEXT,
+                      created_at INTEGER NOT NULL,
+                      updated_at INTEGER NOT NULL
+                    ) STRICT;
+                    CREATE TABLE IF NOT EXISTS user_profile_emails (
+                      email TEXT NOT NULL PRIMARY KEY,
+                      profile_id TEXT NOT NULL,
+                      binding_id TEXT,
+                      created_at INTEGER NOT NULL
+                    ) STRICT;
+                    CREATE INDEX IF NOT EXISTS idx_user_profile_emails_profile_id
+                      ON user_profile_emails(profile_id);
+                    CREATE TABLE IF NOT EXISTS user_profile_identities (
+                      provider TEXT NOT NULL,
+                      subject TEXT NOT NULL,
+                      profile_id TEXT NOT NULL,
+                      canonical_login TEXT,
+                      created_at INTEGER NOT NULL,
+                      authorization_id TEXT,
+                      authorization_basis_json TEXT,
+                      PRIMARY KEY (provider, subject)
+                    ) STRICT;
+                    CREATE INDEX IF NOT EXISTS idx_user_profile_identities_profile_id
+                      ON user_profile_identities(profile_id);
+                    CREATE UNIQUE INDEX IF NOT EXISTS idx_user_profile_identities_authorization
+                      ON user_profile_identities(authorization_id);
+                  `);
                   const columns = (table) => new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((row) => row.name));
                   const additions = {
                     user_profiles: [["primary_github_account_id", "INTEGER"], ["role", "TEXT"]],
@@ -175,13 +211,13 @@ spec:
                   key: THREE_EIGHT_BASE_URL
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: 256Mi
             limits:
               cpu: 500m
-              memory: 512Mi
-              ephemeral-storage: 512Mi
+              memory: 1Gi
+              ephemeral-storage: 1Gi
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
