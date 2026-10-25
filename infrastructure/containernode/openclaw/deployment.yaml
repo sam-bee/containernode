@@ -106,9 +106,37 @@ spec:
               schema_marker=/home/node/.openclaw/.state-schema-2026.10.7
               session_marker=/home/node/.openclaw/.session-sqlite-validate-2026.10.7
               plugin_marker=/home/node/.openclaw/.plugins-2026.10.7
+              journal_marker=/home/node/.openclaw/.agent-journal-delete-2026.10.7
               private_tmp=/home/node/.openclaw/.tmp
               mkdir -p "${private_tmp}"
               chmod 700 "${private_tmp}"
+
+              if [ ! -f "${journal_marker}" ]; then
+                OPENCLAW_STATE_DIR=/home/node/.openclaw node --experimental-sqlite -e '
+                  const fs = require("node:fs");
+                  const { DatabaseSync } = require("node:sqlite");
+                  const stateDir = process.env.OPENCLAW_STATE_DIR;
+                  const agentIds = ["default", "grok-number1", "personal", "3-8"];
+                  for (const agentId of agentIds) {
+                    const pathname = `${stateDir}/agents/${agentId}/agent/openclaw-agent.sqlite`;
+                    if (!fs.existsSync(pathname)) continue;
+                    const db = new DatabaseSync(pathname);
+                    try {
+                      db.exec("PRAGMA busy_timeout = 15000;");
+                      const current = String(Object.values(db.prepare("PRAGMA journal_mode;").get() ?? {})[0] ?? "").toLowerCase();
+                      if (current !== "delete") {
+                        const converted = String(Object.values(db.prepare("PRAGMA journal_mode = DELETE;").get() ?? {})[0] ?? "").toLowerCase();
+                        if (converted !== "delete") throw new Error(`${agentId}: journal mode remained ${converted || "unknown"}`);
+                      }
+                      const integrity = String(Object.values(db.prepare("PRAGMA integrity_check;").get() ?? {})[0] ?? "").toLowerCase();
+                      if (integrity !== "ok") throw new Error(`${agentId}: integrity_check=${integrity || "unknown"}`);
+                    } finally {
+                      db.close();
+                    }
+                  }
+                '
+                touch "${journal_marker}"
+              fi
 
               plugins_match() {
                 openclaw plugins list --json > "${private_tmp}/plugins.json" 2>/dev/null
