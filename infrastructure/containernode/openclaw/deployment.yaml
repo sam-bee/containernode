@@ -101,7 +101,7 @@ spec:
               state_db=/home/node/.openclaw/state/openclaw.sqlite
               doctor_marker=/home/node/.openclaw/.doctor-2026.10.7
               if [ -f "${state_db}" ] && [ ! -f "${doctor_marker}" ]; then
-                openclaw doctor --fix --non-interactive --yes
+                openclaw doctor --fix --force --non-interactive --yes
                 touch "${doctor_marker}"
               fi
 
