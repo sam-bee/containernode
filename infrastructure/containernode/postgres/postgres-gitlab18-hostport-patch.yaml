@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-gitlab18
+  namespace: postgres
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          ports:
+            - name: postgres
+              containerPort: 5432
+              hostIP: 127.0.0.1
+              hostPort: 5432

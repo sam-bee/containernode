@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-gitlab18-data
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  hostPath:
+    # This directory is intentionally separate from both postgres-data
+    # (GitLab's PostgreSQL 17 data) and postgres18-data (the other services).
+    path: /mnt/userdata-clusterfiles/k3s-volumes/postgres-gitlab18
+    type: DirectoryOrCreate
+  claimRef:
+    namespace: postgres
+    name: postgres-gitlab18-data

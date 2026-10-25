@@ -12,3 +12,10 @@ resources:
   - postgres18-persistentvolumeclaim.yaml
   - postgres18-deployment.yaml
   - postgres18-service.yaml
+  # GitLab-only PostgreSQL 18 target.  The host-port, old-deployment
+  # retirement, and stable-Service cutover patches are intentionally added
+  # only during the coordinated cutover.
+  - postgres-gitlab18-persistentvolume.yaml
+  - postgres-gitlab18-persistentvolumeclaim.yaml
+  - postgres-gitlab18-deployment.yaml
+  - postgres-gitlab18-service.yaml

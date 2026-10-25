@@ -1,0 +1,8 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: postgres
+spec:
+  # Keep the old Deployment and its retained PV/PVC declarative for rollback.
+  replicas: 0
