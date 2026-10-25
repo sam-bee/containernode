@@ -3,11 +3,11 @@ import { threadId } from "node:worker_threads";
 
 const TRACE_PREFIX = "[sqlite-trace]";
 const lockCodes = new Set(["SQLITE_BUSY", "SQLITE_LOCKED", 5, 6]);
-const lockText = /(?:database|table|schema|statement)\s+(?:is\s+)?locked|busy/iu;
 
 function isLockError(error) {
   const code = error?.code ?? error?.errcode;
-  return lockCodes.has(code) || lockText.test(String(error?.message ?? ""));
+  const message = String(error?.message ?? "").toLowerCase();
+  return lockCodes.has(code) || message.includes("locked") || message.includes("busy");
 }
 
 function trace(method, error) {
@@ -28,12 +28,13 @@ function wrapSyncMethod(prototype, method) {
     try {
       const result = original.apply(this, args);
       if (method === "iterate" && result && typeof result.next === "function") {
+        const next = result.next.bind(result);
         return new Proxy(result, {
           get(target, property, receiver) {
             if (property !== "next") return Reflect.get(target, property, receiver);
             return (...nextArgs) => {
               try {
-                return target.next(...nextArgs);
+                return next(...nextArgs);
               } catch (error) {
                 trace(method, error);
                 throw error;
