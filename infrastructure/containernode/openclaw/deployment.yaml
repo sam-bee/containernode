@@ -105,26 +105,33 @@ spec:
               state_db=/home/node/.openclaw/state/openclaw.sqlite
               schema_marker=/home/node/.openclaw/.state-schema-2026.10.7
               session_marker=/home/node/.openclaw/.session-sqlite-validate-2026.10.7
+              plugin_marker=/home/node/.openclaw/.plugins-2026.10.7
               private_tmp=/home/node/.openclaw/.tmp
               mkdir -p "${private_tmp}"
               chmod 700 "${private_tmp}"
 
-              matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.10.7"' "${matrix_manifest}"; }; then
-                if [ -n "${matrix_manifest}" ]; then
-                  openclaw --log-level debug plugins update matrix --accept-capabilities
-                else
-                  openclaw plugins install '@openclaw/matrix@2026.10.7' --pin --force --accept-capabilities
-                fi
-              fi
+              plugins_match() {
+                openclaw plugins list --json > "${private_tmp}/plugins.json" 2>/dev/null
+                node -e '
+                  const fs = require("node:fs");
+                  const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+                  const expected = new Map([
+                    ["matrix", {version: "2026.10.7", origin: "global", status: "loaded"}],
+                    ["deepseek", {version: "2026.10.7", origin: "global", status: "loaded"}],
+                    ["codex", {version: "2026.10.7", origin: "bundled", status: "loaded"}],
+                  ]);
+                  for (const [id, want] of expected) {
+                    const got = data.plugins.find((plugin) => plugin.id === id);
+                    if (!got || got.version !== want.version || got.origin !== want.origin || got.status !== want.status || got.enabled !== true) process.exit(1);
+                  }
+                ' "${private_tmp}/plugins.json"
+              }
 
-              deepseek_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/deepseek-provider/package.json' -print -quit 2>/dev/null || true)"
-              if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.10.7"' "${deepseek_manifest}"; }; then
-                if [ -n "${deepseek_manifest}" ]; then
-                  openclaw --log-level debug plugins update deepseek --accept-capabilities
-                else
-                  openclaw plugins install '@openclaw/deepseek-provider@2026.10.7' --pin --force --accept-capabilities
-                fi
+              if [ ! -f "${plugin_marker}" ] || ! plugins_match; then
+                openclaw plugins update '@openclaw/matrix@2026.10.7' --accept-capabilities
+                openclaw plugins update '@openclaw/deepseek-provider@2026.10.7' --accept-capabilities
+                plugins_match
+                touch "${plugin_marker}"
               fi
 
               if [ -f "${state_db}" ] && [ ! -f "${schema_marker}" ]; then
