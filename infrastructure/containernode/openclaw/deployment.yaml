@@ -106,12 +106,12 @@ spec:
 
               matrix_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/matrix/package.json' -print -quit 2>/dev/null || true)"
               if ! { [ -n "${matrix_manifest}" ] && grep -q '"version": "2026.10.7"' "${matrix_manifest}"; }; then
-                openclaw plugins install '@openclaw/matrix@2026.10.7' --pin --force
+                openclaw plugins install '@openclaw/matrix@2026.10.7' --pin --force --accept-capabilities
               fi
 
               deepseek_manifest="$(find /home/node/.openclaw/npm/projects -path '*/node_modules/@openclaw/deepseek-provider/package.json' -print -quit 2>/dev/null || true)"
               if ! { [ -n "${deepseek_manifest}" ] && grep -q '"version": "2026.10.7"' "${deepseek_manifest}"; }; then
-                openclaw plugins install '@openclaw/deepseek-provider@2026.10.7' --pin --force
+                openclaw plugins install '@openclaw/deepseek-provider@2026.10.7' --pin --force --accept-capabilities
               fi
 
               if [ -f "${state_db}" ] && [ ! -f "${doctor_marker}" ]; then
