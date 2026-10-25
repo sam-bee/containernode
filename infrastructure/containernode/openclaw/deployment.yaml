@@ -127,13 +127,6 @@ spec:
                 ' "${private_tmp}/plugins.json"
               }
 
-              if [ ! -f "${plugin_marker}" ] || ! plugins_match; then
-                openclaw plugins update '@openclaw/matrix@2026.10.7' --accept-capabilities
-                openclaw plugins update '@openclaw/deepseek-provider@2026.10.7' --accept-capabilities
-                plugins_match
-                touch "${plugin_marker}"
-              fi
-
               if [ -f "${state_db}" ] && [ ! -f "${schema_marker}" ]; then
                 STATE_DB="${state_db}" node --experimental-sqlite -e '
                   const { DatabaseSync } = require("node:sqlite");
@@ -191,6 +184,17 @@ spec:
                   db.close();
                 '
                 touch "${schema_marker}"
+              fi
+
+              if [ ! -f "${plugin_marker}" ] || ! plugins_match; then
+                if ! openclaw plugins update '@openclaw/matrix@2026.10.7' --accept-capabilities; then
+                  openclaw plugins install '@openclaw/matrix@2026.10.7' --pin --force --accept-capabilities
+                fi
+                if ! openclaw plugins update '@openclaw/deepseek-provider@2026.10.7' --accept-capabilities; then
+                  openclaw plugins install '@openclaw/deepseek-provider@2026.10.7' --pin --force --accept-capabilities
+                fi
+                plugins_match
+                touch "${plugin_marker}"
               fi
 
               if [ ! -f "${session_marker}" ]; then
