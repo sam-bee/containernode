@@ -101,6 +101,24 @@ spec:
               state_db=/home/node/.openclaw/state/openclaw.sqlite
               doctor_marker=/home/node/.openclaw/.doctor-2026.10.7
               if [ -f "${state_db}" ] && [ ! -f "${doctor_marker}" ]; then
+                STATE_DB="${state_db}" node --experimental-sqlite -e '
+                  const { DatabaseSync } = require("node:sqlite");
+                  const db = new DatabaseSync(process.env.STATE_DB);
+                  const columns = (table) => new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((row) => row.name));
+                  const additions = {
+                    user_profiles: [["primary_github_account_id", "INTEGER"], ["role", "TEXT"]],
+                    user_profile_emails: [["binding_id", "TEXT"]],
+                    user_profile_identities: [["canonical_login", "TEXT"], ["authorization_id", "TEXT"], ["authorization_basis_json", "TEXT"]]
+                  };
+                  for (const [table, defs] of Object.entries(additions)) {
+                    const present = columns(table);
+                    for (const [name, type] of defs) if (!present.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+                  }
+                  db.exec("CREATE INDEX IF NOT EXISTS idx_user_profile_identities_profile_id ON user_profile_identities(profile_id)");
+                  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_user_profile_identities_authorization ON user_profile_identities(authorization_id)");
+                  db.exec("CREATE INDEX IF NOT EXISTS idx_user_profile_emails_profile_id ON user_profile_emails(profile_id)");
+                  db.close();
+                '
                 openclaw doctor --fix --force --non-interactive --yes
                 touch "${doctor_marker}"
               fi
