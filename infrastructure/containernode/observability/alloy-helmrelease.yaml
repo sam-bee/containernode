@@ -11,7 +11,7 @@ spec:
   chart:
     spec:
       chart: alloy
-      version: 1.11.1
+      version: 1.14.3
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -172,7 +172,7 @@ spec:
           }
     configReloader:
       image:
-        tag: v0.93.1@sha256:428f088fe6fe07ab138bda92113664b04848a1dc408e4d3680a60ecdb55d1a65
+        tag: v0.94.2@sha256:a1897c67478bc23434534e91ad3855280771196b1daf17144db9dbcb655bef71
     controller:
       type: daemonset
       tolerations:
