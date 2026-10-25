@@ -29,7 +29,7 @@ spec:
               mountPath: /data
       containers:
         - name: synapse
-          image: ghcr.io/element-hq/synapse:v1.158.0
+          image: ghcr.io/element-hq/synapse:v1.163.2@sha256:c3c21919a322f74d177a43bce8031adc81ef839ddd117a8dd03cfec350e76e02
           command:
             - /bin/sh
             - -ec
