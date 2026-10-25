@@ -349,10 +349,12 @@ main() {
   [[ -s "${K3S_DATA_DIR}/server/token" ]] || die "k3s server token is missing or empty"
   [[ -f "${K3S_DATA_DIR}/server/manifests/local-storage.yaml.skip" ]] \
     || die "install the local-storage.yaml.skip marker before restarting k3s; see docs/MAINTENANCE.md"
+  [[ -f "${K3S_DATA_DIR}/server/manifests/coredns.yaml.skip" ]] \
+    || die "install the coredns.yaml.skip marker before restarting k3s; see docs/MAINTENANCE.md"
   [[ -r /etc/systemd/system/k3s.service && -r /etc/systemd/system/k3s.service.env ]] \
     || die "the k3s service unit or environment file is missing"
 
-  printf 'Preflight passed: %s -> %s; workloads and Flux are healthy; SQLite, token and skip marker exist.\n' \
+  printf 'Preflight passed: %s -> %s; workloads and Flux are healthy; SQLite, token and skip markers exist.\n' \
     "${current_version}" "${TARGET_VERSION}"
   printf 'GitLab %s is installed; its public certificate is valid through %s.\n' \
     "${gitlab_version}" "${certificate_expiry}"

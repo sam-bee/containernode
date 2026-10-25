@@ -1,5 +1,15 @@
 # GitLab PostgreSQL 17 to 18.6 migration
 
+Completed on 25 October 2026. The stable `postgres` Service now selects
+`postgres-gitlab18`, which runs PostgreSQL 18.6 and owns the existing
+`127.0.0.1:5432` host port. All three cutover patches below are active in the
+final Kustomization. The original PostgreSQL 17 Deployment is at zero replicas;
+its original PV/PVC remain retained. GitLab writers are restored, temporary
+Flux suspensions are cleared, and Rails migrations, background migrations,
+transactional write-path checks and public HTTPS validation passed. The
+procedure below records the completed migration phases; do not rerun its
+initial restore steps against the live target.
+
 This runbook is for the GitLab-only PostgreSQL instance in the `postgres`
 namespace.  The existing `postgres18` Deployment, Service, PV, PVC, and data
 directory are a separate database service for Chat, Grafana, and Synapse and
