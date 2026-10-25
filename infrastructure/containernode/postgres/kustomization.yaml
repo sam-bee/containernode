@@ -19,3 +19,7 @@ resources:
   - postgres-gitlab18-persistentvolumeclaim.yaml
   - postgres-gitlab18-deployment.yaml
   - postgres-gitlab18-service.yaml
+patches:
+  - path: postgres-pg17-retire-patch.yaml
+  - path: postgres-gitlab18-hostport-patch.yaml
+  - path: postgres-stable-service-gitlab18-patch.yaml
