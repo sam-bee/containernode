@@ -61,7 +61,9 @@ spec:
               command:
                 - /bin/sh
                 - -ec
-                - wget -q -O /dev/null --header='Content-Type: application/json' --post-data='{}' http://127.0.0.1:8080/api/health
+                - >-
+                  wget -q -O /dev/null --header='Content-Type: application/json'
+                  --post-data='{}' http://127.0.0.1:8080/api/health
             periodSeconds: 10
             timeoutSeconds: 5
           startupProbe:
