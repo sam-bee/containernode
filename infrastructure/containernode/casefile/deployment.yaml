@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: casefile
+  namespace: casefile
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: casefile
+  template:
+    metadata:
+      labels:
+        app: casefile
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: containernode
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1984
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: casefile
+          # Built from git@github.com:sam-bee/casefile.git and imported on this node.
+          image: localhost/casefile:9643d7d1014d48902c99d62dfc4215525893d170
+          imagePullPolicy: Never
+          env:
+            - name: PORT
+              value: "8080"
+            - name: STATIC_DIR
+              value: /app/public
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: casefile-db
+                  key: DATABASE_URL
+            - name: ELASTICSEARCH_URL
+              value: http://elasticsearch.elasticsearch.svc.cluster.local:9200
+          ports:
+            - name: http
+              containerPort: 8080
+              hostIP: 127.0.0.1
+              hostPort: 8090
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+              ephemeral-storage: 16Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+              ephemeral-storage: 128Mi
+          # The API is POST-only; HTTP GET probes would always receive 405.
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - wget -q -O /dev/null --header='Content-Type: application/json' --post-data='{}' http://127.0.0.1:8080/api/health
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

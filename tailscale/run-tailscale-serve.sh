@@ -12,3 +12,4 @@ tailscale serve --service=svc:postgres --tcp=5432 tcp://127.0.0.1:5432
 tailscale serve --service=svc:syncthing-gui --https=443 http://127.0.0.1:8384
 tailscale serve --service=svc:syncthing-sync --tcp=22000 tcp://127.0.0.1:22000
 tailscale serve --service=svc:transmission --https=443 http://127.0.0.1:9091
+tailscale serve --service=svc:casefile --https=443 http://127.0.0.1:8090
