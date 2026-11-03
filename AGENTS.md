@@ -37,6 +37,14 @@ It primarily manages three related areas:
   regenerating them.
 - Treat the repository as live infrastructure and favor small, clear, reversible changes.
 
+## Casefile releases
+
+- Casefile releases use the full source commit SHA, not a Git tag. Commit and push the clean Casefile checkout first.
+- Set `infrastructure/containernode/casefile/deployment.yaml` to `localhost/casefile:<full-sha>`.
+- Before pushing that manifest change, run `infrastructure/containernode/casefile/build-and-load.sh /path/to/casefile`.
+- Commit and push `containernode/main`, then run `flux reconcile kustomization infrastructure -n flux-system --with-source` and `kubectl rollout status -n casefile deployment/casefile`.
+- Do not deploy Casefile with an imperative `kubectl` image or manifest change; Flux owns the deployment.
+
 ## Privacy and Security
 
 Please do not put the tailnet name or any credentials in version control. A `.sops.yaml` file is available for secrets
