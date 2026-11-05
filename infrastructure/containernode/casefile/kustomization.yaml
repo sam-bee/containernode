@@ -3,5 +3,9 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - casefile-db.secret.sops.yaml
+  - casefile-ghcr.secret.sops.yaml
+  - casefile-flux-write.secret.sops.yaml
+  - casefile-ghcr-flux.secret.sops.yaml
+  - image-automation.yaml
   - deployment.yaml
   - service.yaml

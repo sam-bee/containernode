@@ -18,6 +18,8 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: containernode
       automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: casefile-ghcr
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -26,9 +28,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: casefile
-          # Built from git@github.com:sam-bee/casefile.git and imported on this node.
-          image: localhost/casefile:9643d7d1014d48902c99d62dfc4215525893d170
-          imagePullPolicy: Never
+          image: ghcr.io/sam-bee/nightwatch-casefile:latest@sha256:80fa055e3ca31a37e8acfb7093bed88ec1c1956527f5189809fda580533d60a5 # {"$imagepolicy": "flux-system:casefile"}
+          imagePullPolicy: IfNotPresent
           env:
             - name: PORT
               value: "8080"

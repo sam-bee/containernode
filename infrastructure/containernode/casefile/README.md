@@ -1,7 +1,6 @@
 # Casefile
 
-Source: `git@github.com:sam-bee/casefile.git`, pinned by the full commit in
-`deployment.yaml`. The upstream Dockerfile builds the browser assets and Go
+Source: `git@github.com:sam-bee/casefile.git`. The upstream Dockerfile builds the browser assets and Go
 binary. Casefile runs as UID 1000/GID 1984 with a read-only root filesystem.
 
 The web service is `http://casefile.casefile.svc.cluster.local` inside k3s and
@@ -17,7 +16,9 @@ Casefile uses its own `casefile` database and login role on the existing shared
 PostgreSQL 18 instance at `postgres18.postgres.svc.cluster.local:5432`. The
 SOPS-encrypted `casefile-db.secret.sops.yaml` contains `DATABASE_URL`, including
 `sslmode=require`. The application installs its schema when it starts; the
-role owns only this database and has no administrative privileges.
+role owns only this database and has no administrative privileges. The current
+application uses `local-research` when API requests omit a project; existing
+projects and their records remain available by explicitly selecting them.
 
 The role and database must exist before the first deployment. To restore them
 on a replacement PostgreSQL instance, use an administrative `psql` session in
@@ -57,38 +58,31 @@ the same data directory.
 
 ## Build and update
 
-This single-node deployment imports the application image directly into k3s
-containerd. It requires no registry credentials. The image is node-local and
-uses `imagePullPolicy: Never`; retain/rebuild it when replacing the node or
-clearing the container image store. Flux applies manifests; it does not build
-or import the image.
+Push Casefile changes to GitHub `master`. GitHub Actions tests and builds the image,
+then publishes `ghcr.io/sam-bee/nightwatch-casefile:latest` to the private registry.
+Flux checks for a new digest every five minutes, commits the deployment update to
+`containernode/main`, and reconciles it into the cluster. The digest identifies the
+actual image while the `latest` tag keeps releases automatic. New pushes can take
+several minutes to reach the cluster. No host-side build or image import is needed.
 
-1. Clone/fetch Casefile and check out the desired commit in a clean checkout.
-2. Change `deployment.yaml` to `localhost/casefile:<full-commit>`.
-3. Build and import **before** committing that image change:
+Before editing this repository, fetch `origin` and fast-forward a clean `main`: Flux
+can create commits automatically. If the checkout has local changes or divergent
+commits, preserve them and reconcile deliberately rather than resetting them.
 
-   ```sh
-   export KUBECONFIG="$HOME/.kube/containernode.yaml"
-   infrastructure/containernode/casefile/build-and-load.sh /path/to/casefile
-   ```
+Both the `casefile` and `flux-system` namespaces need the `casefile-ghcr` pull
+Secret. Their SOPS-encrypted manifests use a GitHub token with `read:packages`.
+Rotate both secrets together before the token expires, and check `flux get images all -A`
+and the Casefile rollout afterward. The separate `casefile-flux-write` GitHub deploy key has write access to this
+infrastructure repository so image automation can commit digest updates; Flux's
+original source key remains read-only.
 
-   The helper builds `linux/amd64` in Docker, creates a temporary root pod with
-   the node's bundled containerd CLI and containerd socket, streams the image into
-   containerd, and removes the helper pod on exit. It needs cluster-admin
-   access. If interrupted before cleanup, delete its `casefile-image-import-*`
-   pod from `kube-system`.
+Check automation and the current rollout with:
 
-4. Commit/push the infrastructure change for Flux and wait for readiness:
-
-   ```sh
-   flux reconcile kustomization infrastructure --with-source
-   kubectl rollout status -n elasticsearch deployment/elasticsearch
-   kubectl rollout status -n casefile deployment/casefile
-   ```
-
-For rollback, restore the previous manifest image and rebuild/import that
-revision if it is no longer cached. Check upstream schema compatibility before
-rolling back across application schema changes.
+```sh
+flux get images all -A
+flux get kustomizations -A
+kubectl rollout status -n casefile deployment/casefile
+```
 
 ## Verify
 

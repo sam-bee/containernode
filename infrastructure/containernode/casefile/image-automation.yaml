@@ -1,0 +1,63 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: casefile-flux-write
+  namespace: flux-system
+spec:
+  interval: 5m
+  ref:
+    branch: main
+  secretRef:
+    name: casefile-flux-write
+  url: ssh://git@github.com/sam-bee/containernode
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: casefile
+  namespace: flux-system
+spec:
+  image: ghcr.io/sam-bee/nightwatch-casefile
+  interval: 5m
+  secretRef:
+    name: casefile-ghcr
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: casefile
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: casefile
+  filterTags:
+    pattern: '^latest$'
+  policy:
+    alphabetical: {}
+  digestReflectionPolicy: Always
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: casefile
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: casefile-flux-write
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: Flux
+        email: flux@users.noreply.github.com
+      messageTemplate: 'To deploy Casefile, update the latest image'
+    push:
+      branch: main
+  update:
+    path: ./infrastructure/containernode/casefile
+    strategy: Setters

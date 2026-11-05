@@ -39,11 +39,11 @@ It primarily manages three related areas:
 
 ## Casefile releases
 
-- Casefile releases use the full source commit SHA, not a Git tag. Commit and push the clean Casefile checkout first.
-- Set `infrastructure/containernode/casefile/deployment.yaml` to `localhost/casefile:<full-sha>`.
-- Before pushing that manifest change, run `infrastructure/containernode/casefile/build-and-load.sh /path/to/casefile`.
-- Commit and push `containernode/main`, then run `flux reconcile kustomization infrastructure -n flux-system --with-source` and `kubectl rollout status -n casefile deployment/casefile`.
-- Do not deploy Casefile with an imperative `kubectl` image or manifest change; Flux owns the deployment.
+- GitHub Actions builds and publishes the Casefile image on pushes to Casefile's GitHub `master` branch.
+- Flux tracks the private GHCR `latest` image and commits digest updates under `infrastructure/containernode/casefile`.
+- Flux owns the deployment. Do not imperatively change its image. Before working here, fetch `origin` and fast-forward
+  `main` when clean, since Flux may have committed a new digest. Verify the applied Flux revision and Casefile readiness.
+- Registry access uses the SOPS-encrypted `casefile-ghcr` pull Secrets in the `casefile` and `flux-system` namespaces.
 
 ## Privacy and Security
 
