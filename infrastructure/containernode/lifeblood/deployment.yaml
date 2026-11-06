@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       initContainers:
         - name: migrate
-          image: ghcr.io/sam-bee/lifeblood:latest@sha256:85d8c931cc04fe83fb581db879f22f25cba5839b07186d87da17abc9e209e7a7 # {"$imagepolicy": "flux-system:lifeblood"}
+          image: ghcr.io/sam-bee/lifeblood:latest@sha256:35182c3bb381c073b79e1404cfe24bee0f199c293c2183bfb416305f67f0ee6c # {"$imagepolicy": "flux-system:lifeblood"}
           args: [migrate]
           env:
             - name: DATABASE_URL
@@ -46,7 +46,7 @@ spec:
               drop: [ALL]
       containers:
         - name: lifeblood
-          image: ghcr.io/sam-bee/lifeblood:latest@sha256:85d8c931cc04fe83fb581db879f22f25cba5839b07186d87da17abc9e209e7a7 # {"$imagepolicy": "flux-system:lifeblood"}
+          image: ghcr.io/sam-bee/lifeblood:latest@sha256:35182c3bb381c073b79e1404cfe24bee0f199c293c2183bfb416305f67f0ee6c # {"$imagepolicy": "flux-system:lifeblood"}
           env:
             - name: PUBLIC_BASE_URL
               value: https://lifeblood.personalinfra.co.uk
