@@ -12,6 +12,8 @@ spec:
       app: lifeblood
   template:
     metadata:
+      annotations:
+        checksum/config: "475800582024619439a25d246c8ba744121f1fcaf5a1e4b99d9cbf8d919cc8e4"
       labels:
         app: lifeblood
     spec:
