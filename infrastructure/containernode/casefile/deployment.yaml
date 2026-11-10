@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: casefile
-          image: ghcr.io/sam-bee/nightwatch-casefile:latest@sha256:1a26a5762e4112ca5926377525f6e2d6a5cea3c497984366f5940ea2de666f9a # {"$imagepolicy": "flux-system:casefile"}
+          image: ghcr.io/sam-bee/nightwatch-casefile:latest@sha256:34c9088249706746d67aabfe3a5cd9334500a15f9031f93127ea6a48c8491e03 # {"$imagepolicy": "flux-system:casefile"}
           imagePullPolicy: IfNotPresent
           env:
             - name: PORT
