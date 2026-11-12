@@ -8,3 +8,17 @@ spec:
     app: lifeblood
   ports:
     - {name: http, port: 80, targetPort: public}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lifeblood-api
+  namespace: lifeblood
+spec:
+  type: ClusterIP
+  # Stable upstream for host-level Tailscale Serve; preserve this allocation.
+  clusterIP: 10.43.123.230
+  selector:
+    app: lifeblood
+  ports:
+    - {name: http, port: 80, targetPort: private}
