@@ -2,25 +2,19 @@
 
 Source and API documentation: https://github.com/sam-bee/lifeblood
 
-One public Echo REST API at https://lifeblood.personalinfra.co.uk/oura with one
-bearer token. No browser interface, SSO, Eufy implementation or Redis.
+Lifeblood is available only through the Tailscale Service `svc:lifeblood` on
+HTTPS port 443. Tailscale Serve proxies to the pod's host-local listener at
+`127.0.0.1:8091`; there is no public ingress. The API also requires its bearer
+token. The node's Tailscale Service configuration is in
+`tailscale/run-tailscale-serve.sh`.
 
-The dedicated lifeblood database lives on postgres18; lifeblood_app has only
-runtime privileges and lifeblood_migrate owns this isolated database. Migration
-credentials are injected only into the init container. All application and GHCR
-credentials are SOPS encrypted. API and token-encryption keys were generated
-randomly. Oura application credentials are configured and the owner has completed
-one-time account authorization. All twelve webhook subscriptions are registered
-and the initial 90-day import has completed. Check /oura/connection and /oura/sync
-with the API token for current status; /lifeblood link is only needed for relinking.
+The dedicated database lives on postgres18 with separate runtime and migration
+roles. Credentials and the callback origin are SOPS encrypted. With public
+webhooks disabled, Oura data is reconciled periodically instead of arriving via
+webhook. Relinking requires registering the tailnet callback URL with Oura and
+opening the authorization link from a device on the tailnet.
 
-GitHub Actions publishes private ghcr.io/sam-bee/lifeblood:latest. Flux resolves
-the digest and updates both init and runtime images using casefile-flux-write.
-The only public ingress path is /oura; probes stay internal. TLS is issued by
-letsencrypt-production-dns01-cloudflare. NetworkPolicy permits Traefik ingress,
-DNS, PostgreSQL 18 and public HTTPS egress for fixed Oura destinations.
-
-Edit the encrypted config with sops and restart the Deployment after Flux applies
-credential changes. Keep the encryption key with the database backup. The existing Postgres server certificate
-does not cover postgres18's DNS name; database connections currently use the
-same encrypted sslmode=require convention as Casefile.
+GitHub Actions publishes the private image; Flux updates both deployment images.
+NetworkPolicy permits host-origin traffic, DNS, PostgreSQL, and outbound public
+HTTPS. Keep the encryption key with database backups. The database connection
+uses the cluster's existing encrypted `sslmode=require` convention.

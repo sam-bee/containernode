@@ -17,6 +17,8 @@ spec:
       labels:
         app: lifeblood
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: containernode
       automountServiceAccountToken: false
       imagePullSecrets:
         - name: lifeblood-ghcr
@@ -49,7 +51,10 @@ spec:
           image: ghcr.io/sam-bee/lifeblood:latest@sha256:83c26dcd879253c431d7993e27ca0f13a9e9dd51b9903b0f4efac3335407f1ba # {"$imagepolicy": "flux-system:lifeblood"}
           env:
             - name: PUBLIC_BASE_URL
-              value: https://lifeblood.personalinfra.co.uk
+              valueFrom:
+                secretKeyRef: {name: lifeblood-config, key: PUBLIC_BASE_URL}
+            - name: OURA_DISABLE_WEBHOOKS
+              value: "true"
             - name: TRUSTED_PROXY_CIDRS
               value: 10.42.0.0/16
             - name: INITIAL_HISTORY_DAYS
@@ -81,7 +86,7 @@ spec:
               valueFrom:
                 secretKeyRef: {name: lifeblood-config, key: EUFYLIFE_PASSWORD, optional: true}
           ports:
-            - {name: http, containerPort: 8080}
+            - {name: http, containerPort: 8080, hostIP: 127.0.0.1, hostPort: 8091}
           resources:
             requests: {cpu: 50m, memory: 64Mi}
             limits: {cpu: '1', memory: 256Mi}
