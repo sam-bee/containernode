@@ -4,6 +4,7 @@ resources:
 - namespace.yaml
 - deployment.yaml
 - service.yaml
+- ingress.yaml
 - networkpolicy.yaml
 - image-automation.yaml
 - lifeblood-config.secret.sops.yaml
