@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-mcp
+  namespace: email-mcp
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: email-mcp
+  template:
+    metadata:
+      labels:
+        app: email-mcp
+    spec:
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: email-mcp-ghcr
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: email-mcp
+          image: ghcr.io/sam-bee/email-mcp:latest@sha256:bce3e333e6505d41c96343fff6ee879ce7f0cf2b8d58224079f4d2e56399521e # {"$imagepolicy": "flux-system:email-mcp"}
+          ports:
+            - {name: http, containerPort: 8000}
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 256Mi

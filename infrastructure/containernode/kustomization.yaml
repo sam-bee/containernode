@@ -21,4 +21,5 @@ resources:
   - syncthing
   - matrix
   - stalwart
+  - email-mcp
   - lifeblood

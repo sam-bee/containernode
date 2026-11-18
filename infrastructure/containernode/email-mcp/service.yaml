@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-mcp
+  namespace: email-mcp
+spec:
+  type: ClusterIP
+  # Stable upstream for host-level Tailscale Serve.
+  clusterIP: 10.43.123.231
+  selector:
+    app: email-mcp
+  ports:
+    - {name: http, port: 80, targetPort: http}

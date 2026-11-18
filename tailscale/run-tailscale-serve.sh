@@ -15,3 +15,4 @@ tailscale serve --service=svc:transmission --https=443 http://127.0.0.1:9091
 tailscale serve --service=svc:casefile --https=443 http://127.0.0.1:8090
 # Lifeblood keeps restricted Pod Security; its private Service has a fixed ClusterIP.
 tailscale serve --service=svc:lifeblood --https=443 http://10.43.123.230:80
+tailscale serve --service=svc:email-mcp --https=443 http://10.43.123.231:80
