@@ -60,8 +60,15 @@ Approve the `containernode` host for `svc:nightwatch-imap` on `tcp:993`
 in Tailscale Services. In Thunderbird's manual account configuration, set
 the incoming protocol to IMAP, use the service's MagicDNS hostname and port
 993, choose SSL/TLS and Normal password, and sign in as
-`agents@nightwatch-research.co.uk`. Use the password from `stalwart-agents`.
-The setup is for reading the shared agent mailbox over the tailnet.
+`agents@nightwatch-research.co.uk`. On the incoming-server screen, use
+**Advanced Configuration** to save the account for reading mail.
+
+Retrieve the IMAP password in a private terminal with the cluster context.
+
+```sh
+kubectl -n stalwart get secret stalwart-agents -o jsonpath='{.data.password}' | base64 -d
+printf '\n'
+```
 
 Tailscale Serve terminates TLS and forwards from the node to the fixed
 ClusterIP of `stalwart-imap`. The Stalwart registry has an `imap-serve`
