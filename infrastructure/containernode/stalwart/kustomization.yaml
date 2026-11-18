@@ -6,3 +6,5 @@ resources:
   - service.yaml
   - networkpolicy.yaml
   - acme-ingress.yaml
+  - stalwart-admin.secret.sops.yaml
+  - stalwart-agents.secret.sops.yaml
