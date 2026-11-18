@@ -25,7 +25,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: email-mcp
-          image: ghcr.io/sam-bee/email-mcp:latest@sha256:fb5217b5dbc01a4ce4e13f73195791a4245b02f7973701c339984d653a301015 # {"$imagepolicy": "flux-system:email-mcp"}
+          image: ghcr.io/sam-bee/email-mcp:latest@sha256:07ce4ce3376a8f1a05daa767ec9474a61c7260eabc2f84600bb7641a6d23204f # {"$imagepolicy": "flux-system:email-mcp"}
           env:
             - name: JMAP_SESSION_URL
               value: http://stalwart-jmap.stalwart.svc.cluster.local:8080/.well-known/jmap
