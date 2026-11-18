@@ -26,6 +26,14 @@ spec:
       containers:
         - name: email-mcp
           image: ghcr.io/sam-bee/email-mcp:latest@sha256:a65539e7fd22f704a77e0b9c9d9a8de5183cf5304bc15068c2ed3c1fa947f04a # {"$imagepolicy": "flux-system:email-mcp"}
+          env:
+            - name: JMAP_SESSION_URL
+              value: http://stalwart-jmap.stalwart.svc.cluster.local:8080/.well-known/jmap
+            - name: JMAP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: email-mcp-jmap
+                  key: token
           ports:
             - {name: http, containerPort: 8000}
           readinessProbe:

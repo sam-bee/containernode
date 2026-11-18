@@ -8,3 +8,4 @@ resources:
   - image-automation.yaml
   - email-mcp-ghcr.secret.sops.yaml
   - email-mcp-ghcr-flux.secret.sops.yaml
+  - email-mcp-jmap.secret.sops.yaml

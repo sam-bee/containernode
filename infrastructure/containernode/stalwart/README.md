@@ -3,7 +3,8 @@
 Stalwart hosts `nightwatch-research.co.uk` at
 `mail.nightwatch-research.co.uk`. The initial mailbox is
 `agents@nightwatch-research.co.uk`, with `postmaster@nightwatch-research.co.uk`
-as an alias.
+as an alias. The domain's `catchAllAddress` points to the agent mailbox
+so mail to unassigned addresses at this domain goes there too.
 
 | Cloudflare record | Name | Target | Priority |
 | --- | --- | --- | --- |
@@ -43,4 +44,12 @@ same package reader as Lifeblood and Casefile. Rotate the copies together.
 
 The Tailscale Services entry is `svc:email-mcp` on `tcp:443`. Once its host is
 approved, use the service's MagicDNS hostname with the path `/mcp`. The
-placeholder exposes zero tools and has no mailbox credentials mounted.
+service uses the official Go MCP SDK and exposes two read-only tools.
+`list_recent_messages` lists the last hour of messages across the agent
+mailbox. `get_message_body` retrieves text and HTML body parts by JMAP ID.
+
+The deployment reads a Stalwart API key from the SOPS-managed
+`email-mcp-jmap` Secret. The key belongs to the agent mailbox and grants only
+`authenticate`, `jmapEmailQuery` and `jmapEmailGet`. To rotate it, create a
+replacement with the same permissions, update the Secret, restart the
+deployment and revoke the old key.
