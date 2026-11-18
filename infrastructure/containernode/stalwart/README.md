@@ -90,7 +90,15 @@ on port 1587. The `MtaStageAuth` policy advertises PLAIN and LOGIN on that
 listener, requires authentication for submission, and checks the envelope
 sender against the authenticated account.
 
-Stalwart sends directly from `51.75.167.127` over TCP 25. The public DNS zone
-needs SPF, DKIM and DMARC. Retrieve the RSA DKIM public TXT record from the
-domain's `dnsZoneFile` field. Set the sending IP's PTR at the IP provider
-to `mail.nightwatch-research.co.uk`.
+Stalwart sends directly from `51.75.167.127` over TCP 25. With this as the
+domain's only sender, publish the following Cloudflare records.
+
+| Type | Name | Value |
+| --- | --- | --- |
+| TXT | `@` | `v=spf1 ip4:51.75.167.127 -all` |
+| TXT | `mail` | `v=spf1 ip4:51.75.167.127 -all` |
+| TXT | `_dmarc` | `v=DMARC1; p=none` |
+| TXT | RSA selector under `_domainkey` | Public key from the domain's `dnsZoneFile` field |
+
+Set the sending IP's PTR at the IP provider to
+`mail.nightwatch-research.co.uk`.
