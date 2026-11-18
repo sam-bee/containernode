@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stalwart-data
+  namespace: stalwart
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  storageClassName: local-path
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stalwart
+  namespace: stalwart
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: stalwart
+  template:
+    metadata:
+      labels:
+        app: stalwart
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 2000
+        runAsGroup: 2000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+        sysctls:
+          - name: net.ipv4.ip_unprivileged_port_start
+            value: "25"
+      containers:
+        - name: stalwart
+          image: ghcr.io/stalwartlabs/stalwart:v1.1.1@sha256:5ebdf474b237161742fe4309396af4ae8797c938e8e6eb7e2d4837332c4f9851
+          args: ["--config", "/var/lib/stalwart/config.json"]
+          env:
+            # The bootstrap listener is reached only by kubectl port-forward.
+            - name: STALWART_RECOVERY_MODE_PORT
+              value: "18080"
+          ports:
+            - {name: smtp, containerPort: 25}
+            - {name: jmap, containerPort: 8080}
+            - {name: acme, containerPort: 8081}
+          readinessProbe:
+            tcpSocket:
+              port: smtp
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - >-
+                  curl -fsS http://127.0.0.1:8080/healthz/live ||
+                  curl -fsS http://127.0.0.1:18080/healthz/live
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 4
+            failureThreshold: 6
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/stalwart}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: stalwart-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

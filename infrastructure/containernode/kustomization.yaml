@@ -20,4 +20,5 @@ resources:
   - gitlab
   - syncthing
   - matrix
+  - stalwart
   - lifeblood
