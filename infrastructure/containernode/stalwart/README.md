@@ -14,15 +14,24 @@ Allow public TCP 25 to containernode. Stalwart renews its STARTTLS certificate
 through HTTP-01 on Traefik's existing TCP 80 listener. The Ingress serves only
 the challenge path on the mail hostname. JMAP stays on the internal Service at
 `http://stalwart-jmap.stalwart.svc.cluster.local:8080/.well-known/jmap`, with pod
-access limited to Email MCP. Administrators can use Kubernetes port forwarding.
+access limited to Email MCP. The JMAP session advertises the same internal hostname for API requests.
+Administrators can port-forward the JMAP Service and call the API directly.
 
 ```sh
 kubectl -n stalwart port-forward svc/stalwart-jmap 8080:8080
 ```
 
-Open `http://127.0.0.1:8080/admin` over that tunnel. The Stalwart namespace has
-separate SOPS-managed Secrets named `stalwart-admin` and `stalwart-agents`
-with `username` and `password` keys. The application stores both its registry
+In a second terminal, request the domain configuration. Curl prompts for the
+administrator password.
+
+```sh
+curl -fsS --user admin@nightwatch-research.co.uk \
+  -H 'Content-Type: application/json' http://127.0.0.1:8080/jmap \
+  -d '{"using":["urn:ietf:params:jmap:core","urn:stalwart:jmap"],"methodCalls":[["x:Domain/get",{},"domains"]]}'
+```
+
+The Stalwart namespace has separate SOPS-managed Secrets named
+`stalwart-admin` and `stalwart-agents` with `username` and `password` keys. The application stores both its registry
 and mailbox data on the `stalwart-data` claim. Preserve both
 `/var/lib/stalwart/config.json` and `/var/lib/stalwart/db` when backing up or
 restoring the volume. Bootstrap uses a temporary operator tunnel to port 18080.

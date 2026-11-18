@@ -42,6 +42,8 @@ spec:
           image: ghcr.io/stalwartlabs/stalwart:v1.1.1@sha256:5ebdf474b237161742fe4309396af4ae8797c938e8e6eb7e2d4837332c4f9851
           args: ["--config", "/var/lib/stalwart/config.json"]
           env:
+            - name: STALWART_PUBLIC_URL
+              value: http://stalwart-jmap.stalwart.svc.cluster.local:8080
             # The bootstrap listener is reached only by kubectl port-forward.
             - name: STALWART_RECOVERY_MODE_PORT
               value: "18080"
