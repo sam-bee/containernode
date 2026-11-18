@@ -25,7 +25,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: email-mcp
-          image: ghcr.io/sam-bee/email-mcp:latest@sha256:bce3e333e6505d41c96343fff6ee879ce7f0cf2b8d58224079f4d2e56399521e # {"$imagepolicy": "flux-system:email-mcp"}
+          image: ghcr.io/sam-bee/email-mcp:latest@sha256:a65539e7fd22f704a77e0b9c9d9a8de5183cf5304bc15068c2ed3c1fa947f04a # {"$imagepolicy": "flux-system:email-mcp"}
           ports:
             - {name: http, containerPort: 8000}
           readinessProbe:
