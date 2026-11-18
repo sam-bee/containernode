@@ -44,9 +44,14 @@ same package reader as Lifeblood and Casefile. Rotate the copies together.
 
 The Tailscale Services entry is `svc:email-mcp` on `tcp:443`. Once its host is
 approved, use the service's MagicDNS hostname with the path `/mcp`. The
-service uses the official Go MCP SDK and exposes two read-only tools.
-`list_recent_messages` lists the last hour of messages across the agent
-mailbox. `get_message_body` retrieves text and HTML body parts by JMAP ID.
+service uses the official Go MCP SDK. Its instructions explain that agents
+can use any unassigned address at the catch-all domain. All three tools are
+read-only.
+
+- `list_recent_messages` lists the last hour of messages across the agent mailbox.
+- `list_messages_to_address` matches the full address in To or Cc. It returns the
+  newest five by default, or every match across mailbox history with `all: true`.
+- `get_message_body` retrieves text and HTML body parts by JMAP ID.
 
 The deployment reads a Stalwart API key from the SOPS-managed
 `email-mcp-jmap` Secret. The key belongs to the agent mailbox and grants only
