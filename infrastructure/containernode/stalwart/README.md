@@ -75,3 +75,22 @@ ClusterIP of `stalwart-imap`. The Stalwart registry has an `imap-serve`
 listener on port 1143 with TLS off for this private hop. Its Imap singleton
 allows password authentication on that hop. The ingress policy grants IMAP
 access to node-local traffic only.
+
+## Outgoing SMTP
+
+Define `nightwatch-smtp` with endpoint `tcp:465` in Tailscale Services and
+approve its `containernode` host. In Thunderbird's Outgoing Server (SMTP)
+settings, enter that service's MagicDNS hostname, port 465, SSL/TLS, Normal
+password and username `agents@nightwatch-research.co.uk`. Use the same
+mailbox password as IMAP. Assign the server to the Nightwatch account.
+
+Tailscale Serve terminates TLS and forwards from the node to
+`stalwart-submission`. The Stalwart registry has a `submission-serve` listener
+on port 1587. The `MtaStageAuth` policy advertises PLAIN and LOGIN on that
+listener, requires authentication for submission, and checks the envelope
+sender against the authenticated account.
+
+Stalwart sends directly from `51.75.167.127` over TCP 25. The public DNS zone
+needs SPF, DKIM and DMARC. Retrieve the RSA DKIM public TXT record from the
+domain's `dnsZoneFile` field. Set the sending IP's PTR at the IP provider
+to `mail.nightwatch-research.co.uk`.

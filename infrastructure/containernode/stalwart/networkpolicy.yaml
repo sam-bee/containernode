@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: stalwart
   policyTypes: [Ingress]
-  # The IMAP backend is reachable by node-local Tailscale Serve only.
+  # The IMAP and submission backends are reachable by node-local Tailscale Serve only.
   ingress:
     - ports: [{protocol: TCP, port: 25}]
     - from:

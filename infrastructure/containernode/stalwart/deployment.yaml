@@ -52,6 +52,7 @@ spec:
             - {name: jmap, containerPort: 8080}
             - {name: acme, containerPort: 8081}
             - {name: imap, containerPort: 1143}
+            - {name: submission, containerPort: 1587}
           readinessProbe:
             tcpSocket:
               port: smtp

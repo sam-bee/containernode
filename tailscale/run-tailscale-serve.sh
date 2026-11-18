@@ -17,3 +17,4 @@ tailscale serve --service=svc:casefile --https=443 http://127.0.0.1:8090
 tailscale serve --service=svc:lifeblood --https=443 http://10.43.123.230:80
 tailscale serve --service=svc:email-mcp --https=443 http://10.43.123.231:80
 tailscale serve --service=svc:nightwatch-imap --tls-terminated-tcp=993 tcp://10.43.123.232:1143
+tailscale serve --service=svc:nightwatch-smtp --tls-terminated-tcp=465 tcp://10.43.123.233:1587
