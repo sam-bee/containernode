@@ -33,3 +33,17 @@ spec:
     app: stalwart
   ports:
     - {name: acme, port: 8081, targetPort: acme}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stalwart-imap
+  namespace: stalwart
+spec:
+  type: ClusterIP
+  # Stable, node-local upstream for Tailscale Serve's TLS forwarder.
+  clusterIP: 10.43.123.232
+  selector:
+    app: stalwart
+  ports:
+    - {name: imap, port: 1143, targetPort: imap}

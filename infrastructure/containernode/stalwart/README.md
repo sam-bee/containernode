@@ -53,3 +53,18 @@ The deployment reads a Stalwart API key from the SOPS-managed
 `authenticate`, `jmapEmailQuery` and `jmapEmailGet`. To rotate it, create a
 replacement with the same permissions, update the Secret, restart the
 deployment and revoke the old key.
+
+## Thunderbird
+
+Approve the `containernode` host for `svc:nightwatch-imap` on `tcp:993`
+in Tailscale Services. In Thunderbird's manual account configuration, set
+the incoming protocol to IMAP, use the service's MagicDNS hostname and port
+993, choose SSL/TLS and Normal password, and sign in as
+`agents@nightwatch-research.co.uk`. Use the password from `stalwart-agents`.
+The setup is for reading the shared agent mailbox over the tailnet.
+
+Tailscale Serve terminates TLS and forwards from the node to the fixed
+ClusterIP of `stalwart-imap`. The Stalwart registry has an `imap-serve`
+listener on port 1143 with TLS off for this private hop. Its Imap singleton
+allows password authentication on that hop. The ingress policy grants IMAP
+access to node-local traffic only.
