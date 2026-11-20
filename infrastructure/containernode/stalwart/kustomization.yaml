@@ -8,3 +8,4 @@ resources:
   - acme-ingress.yaml
   - stalwart-admin.secret.sops.yaml
   - stalwart-agents.secret.sops.yaml
+  - stalwart-sam.secret.sops.yaml
